@@ -16,6 +16,7 @@ public:
 	void FireShot();
 	void Hyperspace();
 	void Hit();
+	bool GetHit();
 	void SetLives(int numberOfLives);
 	void Activate(void);
 	void Deactivate(void);
@@ -33,6 +34,7 @@ private:
 	bool turnRight;
 	bool thrust;
 	bool hit;
+	bool gameOver;
 	int lives;
 	float timerExplode;
 	float timerExplodeAmount;

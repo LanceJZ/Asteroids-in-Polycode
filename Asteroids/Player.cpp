@@ -83,6 +83,7 @@ void Player::NewGame(void)
 void Player::Reset(void)
 {
 	hit = false;
+	gameOver = false;
 	m_Rotation.Amount = 180;
 	m_Position = Vector3(0, 0, 0);
 	m_Velocity = Vector3(0, 0, 0);
@@ -141,7 +142,13 @@ void Player::Update(Number *elapsed)
 
 		if (m_ExplodeTimer->getElapsedf() > timerExplode)
 		{
-			Reset();			
+			if (gameOver)
+			{
+				Deactivate();
+				gameOver = true;
+			}
+			else
+				Reset();
 		}
 	}
 
@@ -186,7 +193,15 @@ void Player::Hit()
 		m_Velocity = m_Velocity * 0.1;
 		m_Acceleration = Vector3(0, 0, 0);
 		ResetExplodeTimer();
+
+		if (lives < 1)
+			gameOver = true;
 	}
+}
+
+bool Player::GetHit()
+{
+	return hit;
 }
 
 void Player::SetLives(int numberOfLives)

@@ -93,6 +93,7 @@ void UFO::Update(Number * elapsed)
 		if (vsPlayer->collided)
 		{
 			pPlayer->Hit();
+			Deactivate();
 		}
 	}
 

@@ -149,9 +149,10 @@ void Rock::Update(Number *elapsed)
 		{
 			CollisionResult *rockvsPlayer = &m_Scene->testCollision(m_RockShape, pPlayer->ShipBody());
 
-			if (rockvsPlayer->collided)
+			if (rockvsPlayer->collided && !pPlayer->GetHit())
 			{
 				pPlayer->Hit();
+				m_Hit = true;
 			}
 		}
 	}
