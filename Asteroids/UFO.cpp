@@ -93,6 +93,7 @@ void UFO::Update(Number * elapsed)
 		if (vsPlayer->collided)
 		{
 			pPlayer->Hit();
+			pPlayer->GotPoints(m_Points);
 			Deactivate();
 		}
 	}
@@ -109,6 +110,7 @@ void UFO::Update(Number * elapsed)
 				{
 					Deactivate();
 					pPlayer->DeactivateShot(i);
+					pPlayer->GotPoints(m_Points);
 					break;
 				}
 			}

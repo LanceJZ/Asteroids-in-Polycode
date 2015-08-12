@@ -152,6 +152,7 @@ void Rock::Update(Number *elapsed)
 			if (rockvsPlayer->collided && !pPlayer->GetHit())
 			{
 				pPlayer->Hit();
+				pPlayer->GotPoints(m_Points);
 				m_Hit = true;
 			}
 		}
@@ -169,6 +170,7 @@ void Rock::Update(Number *elapsed)
 				{
 					m_Hit = true;
 					pPlayer->DeactivateShot(i);
+					pPlayer->GotPoints(m_Points);
 					break;
 				}
 			}

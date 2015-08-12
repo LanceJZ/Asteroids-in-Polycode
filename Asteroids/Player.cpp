@@ -39,6 +39,11 @@ void Player::Setup(CollisionScene *scene)
 		pShots[i] = std::unique_ptr<Shot>(new Shot());
 		pShots[i]->Setup(scene);
 	}
+
+	//pHUD = std::unique_ptr<Score>(new Score());
+	pHUD = std::unique_ptr<HUD>(new HUD());
+	pHUD->Setup(scene);
+	pHUD->Add(0);
 }
 
 SceneMesh *Player::ShipBody()
@@ -74,9 +79,7 @@ void Player::Deactivate(void)
 void Player::NewGame(void)
 {
 	Reset();
-
-	lives = 4;
-
+	pHUD->NewGame();
 	Activate();
 }
 
@@ -147,7 +150,7 @@ void Player::Update(Number *elapsed)
 				Deactivate();
 				gameOver = true;
 			}
-			else
+			else if (clearToSpawn)
 				Reset();
 		}
 	}
@@ -187,16 +190,27 @@ void Player::Hyperspace()
 void Player::Hit()
 {
 	if (!hit)
-	{		
-		lives--;
+	{
+		pHUD->LostLife();
 		hit = true;
+		clearToSpawn = false;
 		m_Velocity = m_Velocity * 0.1;
 		m_Acceleration = Vector3(0, 0, 0);
 		ResetExplodeTimer();
 
-		if (lives < 1)
+		if (pHUD->Lives() < 1)
 			gameOver = true;
 	}
+}
+
+void Player::GotPoints(int points)
+{
+	pHUD->Add(points);
+}
+
+void Player::AllClaer(void)
+{
+	clearToSpawn = true;
 }
 
 bool Player::GetHit()
@@ -204,9 +218,9 @@ bool Player::GetHit()
 	return hit;
 }
 
-void Player::SetLives(int numberOfLives)
+bool Player::CheckClear()
 {
-	lives = numberOfLives;
+	return false;
 }
 
 void Player::ThrustOn()

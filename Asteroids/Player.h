@@ -2,6 +2,8 @@
 #include "Random.h"
 #include "Location.h"
 #include "Shot.h"
+//#include "Score.h"
+#include "HUD.h"
 
 class Player : public Location
 {
@@ -13,18 +15,19 @@ public:
 	void UpdateShots(Number *elapsed);
 	void Turn(bool left, bool right);
 	void Thrust(bool on);
-	void FireShot();
-	void Hyperspace();
-	void Hit();
-	bool GetHit();
-	void SetLives(int numberOfLives);
+	void FireShot(void);
+	void Hyperspace(void);
+	void Hit(void);
+	void GotPoints(int points);
+	void AllClaer(void);
+	bool GetHit(void);
 	void Activate(void);
 	void Deactivate(void);
 	void NewGame(void);
 	void Reset(void);
 	void DeactivateShot(int shot);
 	bool ShotActive(int shot);
-	Vector3 Position();
+	Vector3 Position(void);
 	float ShotRadius(int shot);
 	SceneMesh *ShipBody();
 	SceneMesh *ShotMesh(int shot);
@@ -35,7 +38,7 @@ private:
 	bool thrust;
 	bool hit;
 	bool gameOver;
-	int lives;
+	bool clearToSpawn;
 	float timerExplode;
 	float timerExplodeAmount;
 	float timerClear;
@@ -46,7 +49,10 @@ private:
 	CollisionScene *m_Scene;
 	SceneMesh *m_ShipBody;
 	std::unique_ptr<Shot> pShots[4];
+	//std::unique_ptr<Score> pHUD;
+	std::unique_ptr<HUD> pHUD;
 
+	bool CheckClear();
 	void ThrustOn();
 	void Explode();
 	void ResetExplodeTimer();

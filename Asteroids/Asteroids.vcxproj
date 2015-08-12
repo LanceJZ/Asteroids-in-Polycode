@@ -83,11 +83,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Asteroids.cpp" />
+    <ClCompile Include="HUD.cpp" />
     <ClCompile Include="Location.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Rock.cpp" />
     <ClCompile Include="Rocks.cpp" />
+    <ClCompile Include="Score.cpp" />
     <ClCompile Include="Shot.cpp" />
     <ClCompile Include="UFO.cpp" />
     <ClCompile Include="UFOControl.cpp" />
@@ -95,11 +97,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Asteroids.h" />
+    <ClInclude Include="HUD.h" />
     <ClInclude Include="Location.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Rock.h" />
     <ClInclude Include="Rocks.h" />
+    <ClInclude Include="Score.h" />
     <ClInclude Include="Shot.h" />
     <ClInclude Include="UFO.h" />
     <ClInclude Include="UFOControl.h" />

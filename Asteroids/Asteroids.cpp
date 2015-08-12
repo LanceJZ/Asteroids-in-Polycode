@@ -8,7 +8,7 @@ Asteroids::Asteroids(PolycodeView *view)
 {
 	Random::Setup();
 	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
-	//  Core::resizeTo 	(int xRes, int yRes);
+	//  Core::resizeTo 	(int xRes, int yRes);	
 	core = new POLYCODE_CORE(view, 1024, 720, false, true, 6, 1, 60, 0, true);
 	scene = new CollisionScene();
 	scene->clearColor = Color(0.05, 0.025, 0.1, 1.0);
@@ -16,8 +16,6 @@ Asteroids::Asteroids(PolycodeView *view)
 
 	scene->getDefaultCamera()->setPosition(0, 0, -80);
 	scene->getDefaultCamera()->lookAt(Vector3(0, 0, 0));
-
-	Polycode::Rectangle viewport = scene->getDefaultCamera()->getViewport();
 
 	core->getInput()->addEventListener(this, InputEvent::EVENT_KEYDOWN);
 	core->getInput()->addEventListener(this, InputEvent::EVENT_KEYUP);
@@ -57,7 +55,7 @@ void Asteroids::handleEvent(Event *event)
 				pPlayer->Hyperspace();
 			}
 
-			if (inputEvent->keyCode() == KEY_n)
+			if (inputEvent->keyCode() == KEY_n && !pPlayer->m_Active)
 			{
 				pUFOs->Deactivate();
 				pUFOs->DeactivateShot();
