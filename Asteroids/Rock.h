@@ -18,6 +18,7 @@ public:
 	void Spawn(void);
 	void Update(Number *elapsed);
 	void Deactivate(void);
+	bool CheckClear(void);
 	Vector3 Position(void);
 
 	float m_RockSpeed;

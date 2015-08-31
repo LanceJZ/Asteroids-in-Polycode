@@ -36,7 +36,7 @@ void Rock::Setup(CollisionScene *scene, int size, std::shared_ptr<Player> player
 	pUFO = ufo;
 
 	m_Points = 20;
-	m_Radius = 3;
+	m_Radius = 4;
 	m_RockSpeed = 5;
 
 	if (m_Size == 1)
@@ -44,7 +44,7 @@ void Rock::Setup(CollisionScene *scene, int size, std::shared_ptr<Player> player
 		m_RockSpeed = 9.5;
 		m_RockShape->Scale(Vector3(0.5, 0.5, 0.5));
 		m_Points = 50;
-		m_Radius = 2;
+		m_Radius = 3;
 	}
 
 	if (m_Size == 2)
@@ -52,7 +52,7 @@ void Rock::Setup(CollisionScene *scene, int size, std::shared_ptr<Player> player
 		m_RockSpeed = 18;
 		m_RockShape->Scale(Vector3(0.25, 0.25, 0.25));
 		m_Points = 100;
-		m_Radius = 1;
+		m_Radius = 2;
 	}
 }
 
@@ -126,7 +126,7 @@ void Rock::Spawn(Vector3 position)
 
 void Rock::Spawn(void)
 {	
-	m_Position.x = m_WindowWidth - 3;
+	m_Position.x = m_WindowWidth;
 	m_Position.y = Random::Number(0, m_WindowHeight * 2) - m_WindowHeight;
 	Enable();
 }
@@ -136,6 +136,11 @@ Vector3 Rock::Position(void)
 	return m_Position;
 }
 
+bool Rock::CheckClear(void)
+{
+	return !CirclesIntersect(Vector3(0, 0, 0), 12);
+}
+
 void Rock::Update(Number *elapsed)
 {
 	Location::Update(elapsed);
@@ -143,13 +148,13 @@ void Rock::Update(Number *elapsed)
 	m_RockShape->setPosition(m_Position);
 	CheckForEdge();
 
-	if (pPlayer->m_Active)
+	if (pPlayer->m_Active && !pPlayer->GetHit())
 	{
 		if (CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
 		{
 			CollisionResult *rockvsPlayer = &m_Scene->testCollision(m_RockShape, pPlayer->ShipBody());
 
-			if (rockvsPlayer->collided && !pPlayer->GetHit())
+			if (rockvsPlayer->collided)
 			{
 				pPlayer->Hit();
 				pPlayer->GotPoints(m_Points);

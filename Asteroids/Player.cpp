@@ -27,9 +27,9 @@ void Player::Setup(CollisionScene *scene)
 
 	m_ShipBody->getMesh()->addVertex(-1.15, 0.8, 0.0); //Top back tip.
 	m_ShipBody->getMesh()->addVertex(1.15, 0, 0.0); //Nose pointing to the left of screen.
-	m_ShipBody->getMesh()->addVertex(-1.15, -0.8, 0.0);
-	m_ShipBody->getMesh()->addVertex(-0.95, -0.4, 0.0);
-	m_ShipBody->getMesh()->addVertex(-0.95, 0.4, 0.0);
+	m_ShipBody->getMesh()->addVertex(-1.15, -0.8, 0.0); //Bottom back tip.
+	m_ShipBody->getMesh()->addVertex(-0.95, -0.4, 0.0); //Bottom inside back.
+	m_ShipBody->getMesh()->addVertex(-0.95, 0.4, 0.0); //Top inside back.
 	m_ShipBody->cacheToVertexBuffer(true);
 
 	m_Radius = 1.5;
@@ -40,7 +40,6 @@ void Player::Setup(CollisionScene *scene)
 		pShots[i]->Setup(scene);
 	}
 
-	//pHUD = std::unique_ptr<Score>(new Score());
 	pHUD = std::unique_ptr<HUD>(new HUD());
 	pHUD->Setup(scene);
 	pHUD->Add(0);
@@ -66,6 +65,8 @@ void Player::Activate(void)
 	m_Scene->addCollisionChild(m_ShipBody, CollisionEntity::SHAPE_MESH);
 	m_ShipBody->enabled = true;
 	m_Active = true;
+	gameOver = false;
+	hit = false;
 }
 
 void Player::Deactivate(void)
@@ -86,12 +87,12 @@ void Player::NewGame(void)
 void Player::Reset(void)
 {
 	hit = false;
-	gameOver = false;
 	m_Rotation.Amount = 180;
 	m_Position = Vector3(0, 0, 0);
 	m_Velocity = Vector3(0, 0, 0);
 	m_Acceleration = Vector3(0, 0, 0);
 	m_ShipBody->setColor(0.8, 0.8, 1.0, 1.0);
+	m_ShipBody->enabled = true;
 }
 
 void Player::DeactivateShot(int shot)
@@ -148,10 +149,11 @@ void Player::Update(Number *elapsed)
 			if (gameOver)
 			{
 				Deactivate();
-				gameOver = true;
 			}
 			else if (clearToSpawn)
 				Reset();
+			else if (!clearToSpawn)
+				m_ShipBody->enabled = false;
 		}
 	}
 
@@ -208,14 +210,14 @@ void Player::GotPoints(int points)
 	pHUD->Add(points);
 }
 
-void Player::AllClaer(void)
-{
-	clearToSpawn = true;
-}
-
 bool Player::GetHit()
 {
 	return hit;
+}
+
+void Player::SetClear(void)
+{
+	clearToSpawn = true;
 }
 
 bool Player::CheckClear()

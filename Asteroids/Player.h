@@ -2,7 +2,6 @@
 #include "Random.h"
 #include "Location.h"
 #include "Shot.h"
-//#include "Score.h"
 #include "HUD.h"
 
 class Player : public Location
@@ -19,8 +18,8 @@ public:
 	void Hyperspace(void);
 	void Hit(void);
 	void GotPoints(int points);
-	void AllClaer(void);
 	bool GetHit(void);
+	void SetClear(void);
 	void Activate(void);
 	void Deactivate(void);
 	void NewGame(void);
@@ -31,7 +30,7 @@ public:
 	float ShotRadius(int shot);
 	SceneMesh *ShipBody();
 	SceneMesh *ShotMesh(int shot);
-
+	
 private:
 	bool turnLeft;
 	bool turnRight;

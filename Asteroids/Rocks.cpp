@@ -16,6 +16,8 @@ void Rocks::Setup(CollisionScene *scene, std::shared_ptr<Player> player, std::sh
 void Rocks::Update(Number *elapsed)
 {
 	int numberOfActiveRocks = 0;
+	int numberClear = 0;
+	bool playerClear = false;
 
 	for (size_t rock = 0; rock < pLargeRocks.size(); rock++)
 	{
@@ -27,6 +29,14 @@ void Rocks::Update(Number *elapsed)
 			{
 				SpawnMedRocks(pLargeRocks.at(rock)->Position());
 				pLargeRocks.at(rock)->Deactivate();				
+			}
+
+			if (pPlayer->GetHit())
+			{
+				playerClear = pLargeRocks.at(rock)->CheckClear();
+
+				if (playerClear)
+					numberClear++;
 			}
 
 			numberOfActiveRocks++;
@@ -45,6 +55,14 @@ void Rocks::Update(Number *elapsed)
 				pMedRocks.at(rock)->Deactivate();
 			}
 
+			if (pPlayer->GetHit())
+			{
+				playerClear = pMedRocks.at(rock)->CheckClear();
+
+				if (playerClear)
+					numberClear++;
+			}
+
 			numberOfActiveRocks++;
 		}
 	}
@@ -59,16 +77,28 @@ void Rocks::Update(Number *elapsed)
 				pSmallRocks.at(rock)->Deactivate();
 			}
 
+			if (pPlayer->GetHit())
+			{
+				playerClear = pSmallRocks.at(rock)->CheckClear();
+
+				if (playerClear)
+					numberClear++;
+			}
+
 			numberOfActiveRocks++;
 		}
+	}
+
+	if (playerClear)
+	{
+		if (numberClear == numberOfActiveRocks)
+			pPlayer->SetClear();
 	}
 	
 	if (numberOfActiveRocks < 1)
 	{
-		m_NumberOfRocks++;
-
-		if (m_NumberOfRocks > 14)
-			m_NumberOfRocks = 14;
+		if (m_NumberOfRocks < 18)
+			m_NumberOfRocks++;
 
 		m_Wave++;
 
@@ -95,7 +125,7 @@ void Rocks::NewGame(void)
 		pSmallRocks.at(rock)->Deactivate();
 	}
 
-	m_NumberOfRocks = 4;
+	m_NumberOfRocks = 10;
 	m_Wave = 0;
 	SpawnNewWave(m_NumberOfRocks);
 }
