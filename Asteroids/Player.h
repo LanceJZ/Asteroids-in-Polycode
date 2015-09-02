@@ -3,6 +3,7 @@
 #include "Location.h"
 #include "Shot.h"
 #include "HUD.h"
+//#include "Score.h"
 
 class Player : public Location
 {
@@ -18,7 +19,7 @@ public:
 	void Hyperspace(void);
 	void Hit(void);
 	void GotPoints(int points);
-	bool GetHit(void);
+	bool GotHit(void);
 	void SetClear(void);
 	void Activate(void);
 	void Deactivate(void);
@@ -47,8 +48,9 @@ private:
 	Timer *m_ClearTimer;
 	CollisionScene *m_Scene;
 	SceneMesh *m_ShipBody;
+	std::vector<Entity*> m_ShipLives;
+
 	std::unique_ptr<Shot> pShots[4];
-	//std::unique_ptr<Score> pHUD;
 	std::unique_ptr<HUD> pHUD;
 
 	bool CheckClear();

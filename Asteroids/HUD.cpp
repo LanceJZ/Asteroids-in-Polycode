@@ -23,8 +23,8 @@ HUD::HUD(void)
 	m_PlayerHighScore = 0;
 
 	m_GameOver = true;
-	m_PlayerScoreLocation = Vector3(m_WindowWidth / 2, m_WindowHeight - 2.5, 0);
-	m_PlayerHighScoreLocation = Vector3(0, m_WindowHeight - 12, 0);
+	m_PlayerScoreLocation = Vector3(m_WindowWidth / 1.5, m_WindowHeight - 0.25f, 0);
+	m_PlayerHighScoreLocation = Vector3(0, m_PlayerHighScoreLocation.y, 0);
 	m_HighScoreListLocaiton = Vector3(15, 30, 0);
 
 	InitializeNumberLine();
@@ -51,8 +51,8 @@ void HUD::Add(int score)
 	m_Scene->removeEntity(m_Numbers);
 	m_Numbers = NULL;
 	m_Numbers = new SceneMesh(Mesh::LINE_MESH);
-	m_Numbers->setColor(1.0, 1.0, 1.0, 0.8);	
-	ProcessNumber(m_Numbers, m_Score, m_PlayerScoreLocation, 0.75);
+	m_Numbers->setColor(1.0, 1.0, 1.0, 0.95);	
+	ProcessNumber(m_Numbers, m_Score, m_PlayerScoreLocation, 1);
 	m_Scene->addChild(m_Numbers);
 }
 

@@ -18,7 +18,7 @@ public:
 	void Spawn(void);
 	void Update(Number *elapsed);
 	void Deactivate(void);
-	bool CheckClear(void);
+	bool CheckPlayerClear(void);
 	Vector3 Position(void);
 
 	float m_RockSpeed;

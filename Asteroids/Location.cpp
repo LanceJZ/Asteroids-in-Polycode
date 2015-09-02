@@ -12,7 +12,7 @@ Location::Location()
 	m_Velocity = Polycode::Vector3();
 	m_Acceleration = Polycode::Vector3();
 
-	m_WindowWidth = 1024 / (80 / 3.7);
+	m_WindowWidth = 800 / (80 / 3.7);
 	m_WindowHeight = 720 / (80 / 3.7);
 }
 

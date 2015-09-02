@@ -136,7 +136,7 @@ Vector3 Rock::Position(void)
 	return m_Position;
 }
 
-bool Rock::CheckClear(void)
+bool Rock::CheckPlayerClear(void)
 {
 	return !CirclesIntersect(Vector3(0, 0, 0), 12);
 }
@@ -148,7 +148,7 @@ void Rock::Update(Number *elapsed)
 	m_RockShape->setPosition(m_Position);
 	CheckForEdge();
 
-	if (pPlayer->m_Active && !pPlayer->GetHit())
+	if (pPlayer->m_Active && !pPlayer->GotHit())
 	{
 		if (CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
 		{

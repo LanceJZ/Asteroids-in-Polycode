@@ -40,6 +40,7 @@ void Player::Setup(CollisionScene *scene)
 		pShots[i]->Setup(scene);
 	}
 
+	//pHUD = std::unique_ptr<Score>(new Score());
 	pHUD = std::unique_ptr<HUD>(new HUD());
 	pHUD->Setup(scene);
 	pHUD->Add(0);
@@ -80,14 +81,27 @@ void Player::Deactivate(void)
 void Player::NewGame(void)
 {
 	Reset();
-	pHUD->NewGame();
 	Activate();
+	pHUD->NewGame();
+
+	Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
+
+	for (int i = 0; i < pHUD->Lives(); i++)
+	{
+		m_ShipLives.push_back(m_ShipBody->Clone(true, false));
+		m_ShipLives.at(m_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
+		m_ShipLives.at(m_ShipLives.size() - 1)->setPosition(livesPos);
+		m_ShipLives.at(m_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
+		m_Scene->addChild(m_ShipLives.at(m_ShipLives.size() - 1));
+		livesPos.x -= 2;
+	}
 }
 
 void Player::Reset(void)
 {
 	hit = false;
 	m_Rotation.Amount = 180;
+	m_ShipBody->setRotationEuler(Vector3(0, 0, m_Rotation.Amount));
 	m_Position = Vector3(0, 0, 0);
 	m_Velocity = Vector3(0, 0, 0);
 	m_Acceleration = Vector3(0, 0, 0);
@@ -203,6 +217,29 @@ void Player::Hit()
 		if (pHUD->Lives() < 1)
 			gameOver = true;
 	}
+
+	if (pHUD->Lives() > 0)
+	{
+		for (size_t i = 0; i < m_ShipLives.size(); i++)
+		{
+			m_Scene->removeEntity(m_ShipLives.at(i));			
+		}
+
+		m_ShipLives.clear();
+
+		Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
+
+		for (int i = 0; i < pHUD->Lives(); i++)
+		{
+			m_ShipLives.push_back(m_ShipBody->Clone(true, false));
+			m_ShipLives.at(m_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
+			m_ShipLives.at(m_ShipLives.size() - 1)->setPosition(livesPos);
+			m_ShipLives.at(m_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
+			m_Scene->addChild(m_ShipLives.at(m_ShipLives.size() - 1));
+			livesPos.x -= 2;
+		}
+
+	}
 }
 
 void Player::GotPoints(int points)
@@ -210,7 +247,7 @@ void Player::GotPoints(int points)
 	pHUD->Add(points);
 }
 
-bool Player::GetHit()
+bool Player::GotHit()
 {
 	return hit;
 }

@@ -6,7 +6,7 @@ Score::Score()
 	CoreServices::getInstance()->getResourceManager()->addDirResource("default", false);
 	NewGame();
 	Scene *scene = new Scene(Scene::SCENE_2D);
-	scene->getActiveCamera()->setOrthoSize(1200, 720);
+	scene->getActiveCamera()->setOrthoSize(1200, 800);
 	m_Scene = scene;
 	m_SceneLabel = new SceneLabel("Score:", 22);
 	m_Scene->addChild(m_SceneLabel);
