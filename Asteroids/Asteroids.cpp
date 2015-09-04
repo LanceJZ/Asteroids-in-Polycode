@@ -9,7 +9,7 @@ Asteroids::Asteroids(PolycodeView *view)
 	Random::Setup();
 	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
 	//  Core::resizeTo 	(int xRes, int yRes);	
-	core = new POLYCODE_CORE(view, 1024, 800, false, true, 6, 1, 60, 0, true);
+	core = new POLYCODE_CORE(view, 1024, 800, false, true, 4, 1, 90, 0, true);
 	scene = new CollisionScene();
 	scene->clearColor = Color(0.05, 0.025, 0.1, 1.0);
 	scene->useClearColor = true;

@@ -6,6 +6,15 @@ HUD::HUD(void)
 
 	m_Letters = new SceneMesh(Mesh::LINE_MESH);
 	m_Letters->setColor(1.0, 1.0, 1.0, 1.0);
+	m_GameOverLetters = new SceneMesh(Mesh::LINE_MESH);
+	m_GameOverLetters->setColor(1.0, 1.0, 1.0, 0.85);
+
+	for (int i = 0; i < 4; i++)
+	{
+		m_InstructionLetters[i] = new SceneMesh(Mesh::LINE_MESH);
+		m_InstructionLetters[i]->setColor(1.0, 1.0, 1.0, 0.85);
+	}
+
 
 	m_GameText[0] = "GAME OVER";
 	m_GameText[1] = "N KEY TO START OR RESTART GAME";
@@ -16,26 +25,62 @@ HUD::HUD(void)
 	m_GameText[6] = "NEW HIGH SCORE";
 	m_GameText[7] = "ROTATE TO SELECT LETTER FIRE KEY WHEN DONE";
 
-	m_PlayerHighScore = 0;
-
 	m_GameOver = true;
 	m_GameOverLocation = Vector3(0, 0, 0);
 	m_PlayerScoreLocation = Vector3(m_WindowWidth / 1.5, m_WindowHeight - 0.25f, 0);
 	m_PlayerHighScoreLocation = Vector3(0, m_WindowHeight - 0.25f, 0);
-	m_HighScoreListLocaiton = Vector3(15, 30, 0);
+	m_HighScoreListLocaiton = Vector3(0, -m_WindowHeight / 2, 0);
+
+	for (int i = 0; i < 4; i++)
+	{
+		m_GameTextLocation[i] = Vector3(0, -m_WindowHeight / 1.5 + (i * -2.5), 0);
+	}
 
 	InitializeNumberLine();
 	InitializeLetterLine();
+
+	// High Scores Setup ----------------------------------
+	// Set Default high scores list
+	for (int rank = 0; rank < 10; rank++)
+	{
+		for (int name = 0; name < 3; name++)
+		{
+			m_HiScores[rank].Name[name] = 0;
+		}
+
+		m_HiScores[rank].Score = (rank * -2000) + 20000;
+	}
+
+	m_SaveFileName = "HiScores.bin";
+
+	// Test for HiScore.bin file.
+	std::ifstream file(m_SaveFileName, std::ios::binary);
+
+	// If file exists, get data.
+	if (file)
+	{
+		file.read((char *)&m_HiScores, sizeof(m_HiScores));
+	}
+
+	file.close(); // Close file.
+
+	// Pass high score from file (or 0 if no file), to high score display on top.
+	m_PlayerHighScore = m_HiScores[0].Score;
 }
 
 void HUD::Setup(Scene * scene)
 {
 	m_Scene = scene;
+	SetupTextMeshs();
 }
 
 void HUD::Update()
 {
 
+}
+
+void HUD::DisplayHighScores(int list)
+{
 }
 
 void HUD::Add(int score)
@@ -57,10 +102,8 @@ void HUD::Add(int score)
 	m_HiScoreNumbers = NULL;
 	m_ScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
 	m_HiScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
-	m_GameOverLetters = new SceneMesh(Mesh::LINE_MESH);
 	m_ScoreNumbers->setColor(1.0, 1.0, 1.0, 0.95);
-	m_HiScoreNumbers->setColor(1.0, 1.0, 1.0, 0.95);
-	m_GameOverLetters->setColor(1.0, 1.0, 1.0, 0.95);
+	m_HiScoreNumbers->setColor(1.0, 1.0, 1.0, 0.85);
 	ProcessNumber(m_ScoreNumbers, m_Score, m_PlayerScoreLocation, 1);
 	ProcessNumber(m_HiScoreNumbers, m_PlayerHighScore, m_PlayerHighScoreLocation, 1);
 }
@@ -82,22 +125,82 @@ void HUD::NewGame(void)
 {
 	m_Lives = 4;
 	m_Score = 0;
-	m_NextNewShipScore = 10000;
+	m_NextNewShipScore = 10000;	
 }
 
 void HUD::GameOver(bool gameIsOver)
 {
 	if (gameIsOver)
 	{
-		ProcessTextLine(m_GameOverLetters, m_GameText[0], m_GameOverLocation, 1);
 		m_GameOverLetters->enabled = true;
-		m_Scene->addChild(m_GameOverLetters);
+
+		for (int i = 0; i < 4; i++)
+		{
+			m_InstructionLetters[i]->enabled = true;
+		}
+
+		for (int rank = 0; rank < 10; rank++)
+		{
+			if (m_Score > m_HiScores[rank].Score)
+			{
+				m_NewScore = true;
+				m_HighScoreRank = rank;
+
+				if (rank < 9)
+				{
+					HiScoreData oldScores[10];
+
+					for (int oldranks = m_HighScoreRank; oldranks < 10; oldranks++)
+					{
+						oldScores[oldranks].Score = m_HiScores[oldranks].Score;
+
+						for (int name = 0; name < 3; name++)
+							oldScores[oldranks].Name[name] = m_HiScores[oldranks].Name[name];
+					}
+
+					for (int oldranks = m_HighScoreRank; oldranks < 9; oldranks++)
+					{
+						m_HiScores[oldranks + 1].Score = oldScores[oldranks].Score;
+
+						for (int name = 0; name < 3; name++)
+							m_HiScores[oldranks + 1].Name[name] = oldScores[oldranks].Name[name];
+					}
+				}
+
+				m_NewHiScore.Score = m_Score;
+
+				SaveHighScores();
+
+				break;
+			}
+		}
 	}
 	else
 	{
 		m_GameOverLetters->enabled = false;
-		m_Scene->removeEntity(m_GameOverLetters);
-		m_GameOverLetters = NULL;
+
+		for (int i = 0; i < 4; i++)
+		{
+			m_InstructionLetters[i]->enabled = false;
+		}
+	}
+}
+
+void HUD::SaveHighScores(void)
+{
+	// Save then close high scores to file.
+	std::ofstream file(m_SaveFileName, std::ios::binary);
+	file.write((char *)& m_HiScores, sizeof(m_HiScores));
+	file.close();
+}
+
+void HUD::SetupTextMeshs(void)
+{
+	ProcessTextLine(m_GameOverLetters, m_GameText[0], m_GameOverLocation, 1);
+
+	for (int i = 1; i < 5; i++)
+	{
+		ProcessTextLine(m_InstructionLetters[i-1], m_GameText[i], m_GameTextLocation[i-1], 0.5);
 	}
 }
 
@@ -146,14 +249,15 @@ void HUD::MakeNumbersMesh(SceneMesh *numbers, float location, int number, float 
 void HUD::ProcessTextLine(SceneMesh * letters, String textLine, Vector3 locationStart, float size)
 {
 	int textSize = textLine.size();
-	int space = float((-size * 3) * (textSize - 1) / 2);
+	float charsize = 2.666;
+	float space = float(((-size * charsize) * (textSize - 1)) / 2);
 
 	for (int letter = 0; letter < textSize; letter++)
 	{
 		if ((int)textLine[letter] > 64 && (int)textLine[letter] < 91)
 			MakeLettersMesh(letters, space, (int)textLine[letter] - 65, size);
 
-		space += float(size * 3);
+		space += float(size * charsize);
 	}
 
 	letters->setPosition(locationStart);

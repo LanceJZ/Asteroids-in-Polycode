@@ -176,7 +176,7 @@ void Player::Update(Number *elapsed)
 		}
 	}
 
-	m_ShipBody->setPosition(m_Position);
+	m_ShipBody->setPosition(m_Position); //x=-42.402519680160438
 
 	CheckForEdge();
 }
