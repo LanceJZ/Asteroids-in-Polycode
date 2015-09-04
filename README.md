@@ -1,10 +1,11 @@
-Asteroids in Polycode
-=====================
+Asteroids in Polycode Alpha
+===========================
 
-Asteroids made using Polycode framework 0.83 Beta in C++ Version Zero.
+Asteroids uses the Polycode framework 0.83 Beta in C++.
+OpenAL is required, so if you don't have it installed, copy it from the Release folder. Recent Discreate graphics are required for Polycode, so if it can't handle it the game will crash. I don't know what the minimum is yet, my laptop with ATI Mobility Radeon HD 5470 it wont run, but on my A10 APU it runs the release just fine at 1% CPU usage. It was also tested on a recent laptop with discreate GeForce GTX 760m.
 
-Requires Polycode http://polycode.org a free open source multi platform framework. This is a Visual Studio 2013 project, also free.
-The VS 2015 version stopped working when I upgraded to Windows 10.
+Project requires Polycode http://polycode.org a free open source multi platform framework. This is a Visual Studio 2015 project, also free.
+
 This time around I decided to clone Atari Asteroids as best as I could. I actually counted pixels in screen shots to get everything the right shape and scale. I used vector lines to recreate the vector look. I also use mesh collusion for precise collusion detection.
-This may be the last commit for the Polycode version. I'm going to try the Gameplay3D library instead. I may come back if there is a new version of Polycode.
-Place the Polycode folder beside the Asteroids Sulution folder, that is how I had it.
+
+Place the Polycode folder beside the Asteroids Sulution folder, that is how I have it.
