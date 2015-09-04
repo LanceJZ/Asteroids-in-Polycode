@@ -4,10 +4,6 @@ HUD::HUD(void)
 {
 	NewGame();
 
-	//Scene *scene = new Scene(Scene::SCENE_2D);
-	//m_Scene = scene;
-	//scene->getActiveCamera()->setOrthoSize(1200, 720);
-
 	m_Letters = new SceneMesh(Mesh::LINE_MESH);
 	m_Letters->setColor(1.0, 1.0, 1.0, 1.0);
 
@@ -18,13 +14,14 @@ HUD::HUD(void)
 	m_GameText[4] = "RIGHT CTRL KEY FOR HYPERSPACE";
 	m_GameText[5] = "HIGH SCORE HEROES";
 	m_GameText[6] = "NEW HIGH SCORE";
-	m_GameText[7] = "ARROW KEYS TO SELECT LETTER FIRE KEY WHEN DONE";
+	m_GameText[7] = "ROTATE TO SELECT LETTER FIRE KEY WHEN DONE";
 
 	m_PlayerHighScore = 0;
 
 	m_GameOver = true;
+	m_GameOverLocation = Vector3(0, 0, 0);
 	m_PlayerScoreLocation = Vector3(m_WindowWidth / 1.5, m_WindowHeight - 0.25f, 0);
-	m_PlayerHighScoreLocation = Vector3(0, m_PlayerHighScoreLocation.y, 0);
+	m_PlayerHighScoreLocation = Vector3(0, m_WindowHeight - 0.25f, 0);
 	m_HighScoreListLocaiton = Vector3(15, 30, 0);
 
 	InitializeNumberLine();
@@ -45,15 +42,27 @@ void HUD::Add(int score)
 {
 	m_Score += score;
 
-	if (m_Score > 10000)
+	if (m_Score > m_NextNewShipScore)
+	{
 		m_Lives++;
+		m_NextNewShipScore += 10000;
+	}
 
-	m_Scene->removeEntity(m_Numbers);
-	m_Numbers = NULL;
-	m_Numbers = new SceneMesh(Mesh::LINE_MESH);
-	m_Numbers->setColor(1.0, 1.0, 1.0, 0.95);	
-	ProcessNumber(m_Numbers, m_Score, m_PlayerScoreLocation, 1);
-	m_Scene->addChild(m_Numbers);
+	if (m_Score > m_PlayerHighScore)
+		m_PlayerHighScore = m_Score;
+
+	m_Scene->removeEntity(m_ScoreNumbers);
+	m_Scene->removeEntity(m_HiScoreNumbers);
+	m_ScoreNumbers = NULL;
+	m_HiScoreNumbers = NULL;
+	m_ScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
+	m_HiScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
+	m_GameOverLetters = new SceneMesh(Mesh::LINE_MESH);
+	m_ScoreNumbers->setColor(1.0, 1.0, 1.0, 0.95);
+	m_HiScoreNumbers->setColor(1.0, 1.0, 1.0, 0.95);
+	m_GameOverLetters->setColor(1.0, 1.0, 1.0, 0.95);
+	ProcessNumber(m_ScoreNumbers, m_Score, m_PlayerScoreLocation, 1);
+	ProcessNumber(m_HiScoreNumbers, m_PlayerHighScore, m_PlayerHighScoreLocation, 1);
 }
 
 void HUD::LostLife(void)
@@ -73,6 +82,23 @@ void HUD::NewGame(void)
 {
 	m_Lives = 4;
 	m_Score = 0;
+	m_NextNewShipScore = 10000;
+}
+
+void HUD::GameOver(bool gameIsOver)
+{
+	if (gameIsOver)
+	{
+		ProcessTextLine(m_GameOverLetters, m_GameText[0], m_GameOverLocation, 1);
+		m_GameOverLetters->enabled = true;
+		m_Scene->addChild(m_GameOverLetters);
+	}
+	else
+	{
+		m_GameOverLetters->enabled = false;
+		m_Scene->removeEntity(m_GameOverLetters);
+		m_GameOverLetters = NULL;
+	}
 }
 
 void HUD::ProcessNumber(SceneMesh *numbers, int number, Vector3 locationStart, float size)
@@ -85,17 +111,18 @@ void HUD::ProcessNumber(SceneMesh *numbers, int number, Vector3 locationStart, f
 		//Make digit the modulus of 10 from number.
 		int digit = numberIn % 10;
 		//This sends a digit to the draw function with the location and size.
-		DrawNumber(numbers, space, digit, size);
+		MakeNumbersMesh(numbers, space, digit, size);
 		// Dividing the int by 10, we discard the digit that was derived from the modulus operation.
 		numberIn /= 10;
 		// Move the location for the next digit location to the left. We start on the right hand side with the lowest digit.
 		space += size * 2;
 	} while (numberIn > 0);
 
-	m_Numbers->setPosition(locationStart);
+	numbers->setPosition(locationStart);
+	m_Scene->addChild(numbers);
 }
 
-void HUD::DrawNumber(SceneMesh *numbers, float location, int number, float size)
+void HUD::MakeNumbersMesh(SceneMesh *numbers, float location, int number, float size)
 {
 	if (number > -1 && number < 10)
 	{
@@ -116,7 +143,24 @@ void HUD::DrawNumber(SceneMesh *numbers, float location, int number, float size)
 	}	
 }
 
-void HUD::DrawLetter(Vector3 location, int letter, float size)
+void HUD::ProcessTextLine(SceneMesh * letters, String textLine, Vector3 locationStart, float size)
+{
+	int textSize = textLine.size();
+	int space = float((-size * 3) * (textSize - 1) / 2);
+
+	for (int letter = 0; letter < textSize; letter++)
+	{
+		if ((int)textLine[letter] > 64 && (int)textLine[letter] < 91)
+			MakeLettersMesh(letters, space, (int)textLine[letter] - 65, size);
+
+		space += float(size * 3);
+	}
+
+	letters->setPosition(locationStart);
+	m_Scene->addChild(letters);
+}
+
+void HUD::MakeLettersMesh(SceneMesh *letters, float location, int letter, float size)
 {
 	//Line LetterLine;
 
@@ -126,10 +170,14 @@ void HUD::DrawLetter(Vector3 location, int letter, float size)
 		{
 			if (Letters[letter].Lines[line])
 			{
-				//LetterLine.LineStart = m_LetterLineStart[line] * size + location;
-				//LetterLine.LineEnd = m_LetterLineEnd[line] * size + location;
+				Number Xstart = m_LetterLineStart[line].x * size - location;
+				Number Ystart = m_LetterLineStart[line].y * size;
 
-				//Window::DrawLine(&LetterLine, &m_Color);
+				Number Xend = m_LetterLineEnd[line].x * size - location;
+				Number Yend = m_LetterLineEnd[line].y * size;
+
+				letters->getMesh()->addVertex(Xstart, Ystart, 0);
+				letters->getMesh()->addVertex(Xend, Yend, 0);
 			}
 		}
 	}
@@ -249,38 +297,38 @@ void HUD::InitializeNumberLine(void)
 void HUD::InitializeLetterLine(void)
 {
 	m_LetterLineStart[0] = Vector3(0, 0, 0); //1
-	m_LetterLineStart[1] = Vector3(1, 0, 0); //2
-	m_LetterLineStart[2] = Vector3(2, 0, 0); //3
-	m_LetterLineStart[3] = Vector3(2, 2, 0); //4
-	m_LetterLineStart[4] = Vector3(1, 4, 0); //5
-	m_LetterLineStart[5] = Vector3(0, 4, 0); //6
-	m_LetterLineStart[6] = Vector3(0, 2, 0); //7
+	m_LetterLineStart[1] = Vector3(-1, 0, 0); //2
+	m_LetterLineStart[2] = Vector3(-2, 0, 0); //3
+	m_LetterLineStart[3] = Vector3(-2, -2, 0); //4
+	m_LetterLineStart[4] = Vector3(-1, -4, 0); //5
+	m_LetterLineStart[5] = Vector3(0, -4, 0); //6
+	m_LetterLineStart[6] = Vector3(0, -2, 0); //7
 	m_LetterLineStart[7] = Vector3(0, 0, 0); //8
 	m_LetterLineStart[8] = Vector3(0, 0, 0); //9
-	m_LetterLineStart[9] = Vector3(2, 0, 0); //10
-	m_LetterLineStart[10] = Vector3(1, 2, 0); //11
-	m_LetterLineStart[11] = Vector3(1, 2, 0); //12
-	m_LetterLineStart[12] = Vector3(1, 2, 0); //13
-	m_LetterLineStart[13] = Vector3(0, 2, 0); //14
-	m_LetterLineStart[14] = Vector3(1, 0, 0); //15
-	m_LetterLineStart[15] = Vector3(1, 2, 0); //16
+	m_LetterLineStart[9] = Vector3(-2, 0, 0); //10
+	m_LetterLineStart[10] = Vector3(-1, -2, 0); //11
+	m_LetterLineStart[11] = Vector3(-1, -2, 0); //12
+	m_LetterLineStart[12] = Vector3(-1, -2, 0); //13
+	m_LetterLineStart[13] = Vector3(0, -2, 0); //14
+	m_LetterLineStart[14] = Vector3(-1, 0, 0); //15
+	m_LetterLineStart[15] = Vector3(-1, -2, 0); //16
 
-	m_LetterLineEnd[0] = Vector3(1, 0, 0); //1
-	m_LetterLineEnd[1] = Vector3(2, 0, 0); //2
-	m_LetterLineEnd[2] = Vector3(2, 2, 0); //3
-	m_LetterLineEnd[3] = Vector3(2, 4, 0); //4
-	m_LetterLineEnd[4] = Vector3(2, 4, 0); //5
-	m_LetterLineEnd[5] = Vector3(1, 4, 0); //6
-	m_LetterLineEnd[6] = Vector3(0, 4, 0); //7
-	m_LetterLineEnd[7] = Vector3(0, 2, 0); //8
-	m_LetterLineEnd[8] = Vector3(1, 2, 0); //9
-	m_LetterLineEnd[9] = Vector3(1, 2, 0); //10
-	m_LetterLineEnd[10] = Vector3(2, 2, 0); //11
-	m_LetterLineEnd[11] = Vector3(2, 4, 0); //12
-	m_LetterLineEnd[12] = Vector3(0, 4, 0); //13
-	m_LetterLineEnd[13] = Vector3(1, 2, 0); //14
-	m_LetterLineEnd[14] = Vector3(1, 2, 0); //15
-	m_LetterLineEnd[15] = Vector3(1, 4, 0); //16
+	m_LetterLineEnd[0] = Vector3(-1, 0, 0); //1
+	m_LetterLineEnd[1] = Vector3(-2, 0, 0); //2
+	m_LetterLineEnd[2] = Vector3(-2, -2, 0); //3
+	m_LetterLineEnd[3] = Vector3(-2, -4, 0); //4
+	m_LetterLineEnd[4] = Vector3(-2, -4, 0); //5
+	m_LetterLineEnd[5] = Vector3(-1, -4, 0); //6
+	m_LetterLineEnd[6] = Vector3(0, -4, 0); //7
+	m_LetterLineEnd[7] = Vector3(0, -2, 0); //8
+	m_LetterLineEnd[8] = Vector3(-1, -2, 0); //9
+	m_LetterLineEnd[9] = Vector3(-1, -2, 0); //10
+	m_LetterLineEnd[10] = Vector3(-2, -2, 0); //11
+	m_LetterLineEnd[11] = Vector3(-2, -4, 0); //12
+	m_LetterLineEnd[12] = Vector3(0, -4, 0); //13
+	m_LetterLineEnd[13] = Vector3(-1, -2, 0); //14
+	m_LetterLineEnd[14] = Vector3(-1, -2, 0); //15
+	m_LetterLineEnd[15] = Vector3(-1, -4, 0); //16
 
 	// A
 	Letters[0].Lines[0] = true;

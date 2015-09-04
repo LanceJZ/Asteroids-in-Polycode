@@ -6,6 +6,7 @@ Player::Player()
 	turnRight = false;
 	thrust = false;
 	hit = false;
+	gameOver = true;
 
 	timerClearAmount = 2.5;
 	timerExplodeAmount = 2.75;
@@ -44,6 +45,7 @@ void Player::Setup(CollisionScene *scene)
 	pHUD = std::unique_ptr<HUD>(new HUD());
 	pHUD->Setup(scene);
 	pHUD->Add(0);
+	pHUD->GameOver(gameOver);
 }
 
 SceneMesh *Player::ShipBody()
@@ -83,6 +85,8 @@ void Player::NewGame(void)
 	Reset();
 	Activate();
 	pHUD->NewGame();
+	pHUD->GameOver(gameOver);
+	pHUD->Add(0);
 
 	Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
 
@@ -163,6 +167,7 @@ void Player::Update(Number *elapsed)
 			if (gameOver)
 			{
 				Deactivate();
+				pHUD->GameOver(gameOver);
 			}
 			else if (clearToSpawn)
 				Reset();
@@ -215,36 +220,41 @@ void Player::Hit()
 		ResetExplodeTimer();
 
 		if (pHUD->Lives() < 1)
+		{
 			gameOver = true;
+		}
 	}
 
-	if (pHUD->Lives() > 0)
+	UpdateLivesDisplay();
+}
+
+void Player::UpdateLivesDisplay(void)
+{
+	for (size_t i = 0; i < m_ShipLives.size(); i++)
 	{
-		for (size_t i = 0; i < m_ShipLives.size(); i++)
-		{
-			m_Scene->removeEntity(m_ShipLives.at(i));			
-		}
+		m_Scene->removeEntity(m_ShipLives.at(i));
+	}
 
-		m_ShipLives.clear();
+	m_ShipLives.clear();
 
-		Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
+	Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
 
-		for (int i = 0; i < pHUD->Lives(); i++)
-		{
-			m_ShipLives.push_back(m_ShipBody->Clone(true, false));
-			m_ShipLives.at(m_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
-			m_ShipLives.at(m_ShipLives.size() - 1)->setPosition(livesPos);
-			m_ShipLives.at(m_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
-			m_Scene->addChild(m_ShipLives.at(m_ShipLives.size() - 1));
-			livesPos.x -= 2;
-		}
-
+	for (int i = 0; i < pHUD->Lives(); i++)
+	{
+		m_ShipLives.push_back(m_ShipBody->Clone(true, false));
+		m_ShipLives.at(m_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
+		m_ShipLives.at(m_ShipLives.size() - 1)->setPosition(livesPos);
+		m_ShipLives.at(m_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
+		m_Scene->addChild(m_ShipLives.at(m_ShipLives.size() - 1));
+		livesPos.x -= 2;
 	}
 }
 
 void Player::GotPoints(int points)
 {
 	pHUD->Add(points);
+
+	UpdateLivesDisplay();
 }
 
 bool Player::GotHit()

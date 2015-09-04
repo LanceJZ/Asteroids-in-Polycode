@@ -26,8 +26,9 @@ public:
 	void Update();
 	void Add(int score);
 	void LostLife(void);
-	int Lives(void);
 	void NewGame(void);
+	void GameOver(bool gameIsOver);
+	int Lives(void);
 
 private:
 	bool m_GameOver;
@@ -37,11 +38,12 @@ private:
 	int m_Lives;
 	Scene *m_Scene;
 	SceneMesh *m_Letters;
-	SceneMesh *m_Numbers;
+	SceneMesh *m_ScoreNumbers;
+	SceneMesh *m_HiScoreNumbers;
+	SceneMesh *m_GameOverLetters;
 
 	std::string m_GameText[8];
 	std::string m_SaveFileName;
-	int m_GameOverLetters[9];
 	Vector3 m_HitsLocation;
 	Vector3 m_GameOverLocation;
 	Vector3 m_GameTextLocation;
@@ -60,8 +62,9 @@ private:
 	Vector3 m_LetterLineEnd[16];
 
 	void ProcessNumber(SceneMesh *numbers, int number, Vector3 locationStart, float size);
-	void DrawNumber(SceneMesh *numbers, float location, int number, float size);
-	void DrawLetter(Vector3 location, int letter, float size);
+	void MakeNumbersMesh(SceneMesh *numbers, float locationX, int number, float size);
+	void ProcessTextLine(SceneMesh *letters, String textLine, Vector3 locationStart, float size);
+	void MakeLettersMesh(SceneMesh *letters, float locationX, int letter, float size);
 	void InitializeNumberLine(void);
 	void InitializeLetterLine(void);
 };

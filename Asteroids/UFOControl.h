@@ -8,15 +8,16 @@ public:
 	void Setup(CollisionScene *scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
 	void WaveNumber(int Wave);
-	Vector3 Position(void);
-	SceneMesh *ShipBody(void);
 	void Deactivate(void);
 	void DeactivateShot(void);
+	void NewGame(void);
 	float ShotRadius(void);
 	float Radius(void);
-	bool Active(void);
 	SceneMesh *ShotMesh(void);
+	SceneMesh *ShipBody(void);
+	Vector3 Position(void);
 	bool ShotActive(void);
+	bool Active(void);
 
 private:
 	CollisionScene *m_Scene;

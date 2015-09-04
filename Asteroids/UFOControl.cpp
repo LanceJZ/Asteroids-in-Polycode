@@ -77,6 +77,15 @@ void UFOControl::DeactivateShot(void)
 	pUFO->DeactivateShot();
 }
 
+void UFOControl::NewGame(void)
+{
+	ResetTimer();
+	Deactivate();
+	DeactivateShot();
+	spawnCounter = 0;
+	wave = 0;
+}
+
 SceneMesh * UFOControl::ShotMesh(void)
 {
 	return pUFO->ShotMesh();

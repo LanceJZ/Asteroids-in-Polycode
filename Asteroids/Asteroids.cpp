@@ -57,8 +57,7 @@ void Asteroids::handleEvent(Event *event)
 
 			if (inputEvent->keyCode() == KEY_n && !pPlayer->m_Active)
 			{
-				pUFOs->Deactivate();
-				pUFOs->DeactivateShot();
+				pUFOs->NewGame();
 				pRocks->NewGame();
 				pPlayer->NewGame();
 			}

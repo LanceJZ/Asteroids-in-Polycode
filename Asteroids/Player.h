@@ -18,6 +18,7 @@ public:
 	void FireShot(void);
 	void Hyperspace(void);
 	void Hit(void);
+	void UpdateLivesDisplay(void);
 	void GotPoints(int points);
 	bool GotHit(void);
 	void SetClear(void);
