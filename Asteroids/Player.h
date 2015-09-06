@@ -8,13 +8,17 @@
 class Player : public Location
 {
 public:
-	Player();
+	Player(void);
 
 	void Setup(CollisionScene *scene);
 	void Update(Number *elapsed);
 	void UpdateShots(Number *elapsed);
-	void Turn(bool left, bool right);
-	void Thrust(bool on);
+	void UpdateGameOver(void);
+	void TurnLeft(void);
+	void TurnRight(void);
+	void TurnOff(void);
+	void ThrustOn(void);
+	void ThrustOff(void);
 	void FireShot(void);
 	void Hyperspace(void);
 	void Hit(void);
@@ -30,33 +34,39 @@ public:
 	bool ShotActive(int shot);
 	Vector3 Position(void);
 	float ShotRadius(int shot);
-	SceneMesh *ShipBody();
+	SceneMesh *ShipBody(void);
 	SceneMesh *ShotMesh(int shot);
-	
+
+	std::unique_ptr<HUD> pHUD;
+
 private:
-	bool turnLeft;
-	bool turnRight;
-	bool thrust;
+	bool shipTurning;
 	bool hit;
 	bool gameOver;
 	bool clearToSpawn;
+	bool thrustOn;
+	int gameOverDisplay;
 	float timerExplode;
 	float timerExplodeAmount;
 	float timerClear;
 	float timerClearAmount;
+	float timerGameOver;
+	float timerGameOverAmount;
 
 	Timer *m_ExplodeTimer;
 	Timer *m_ClearTimer;
+	Timer *m_GameOverTimer;
+
 	CollisionScene *m_Scene;
 	SceneMesh *m_ShipBody;
 	std::vector<Entity*> m_ShipLives;
 
 	std::unique_ptr<Shot> pShots[4];
-	std::unique_ptr<HUD> pHUD;
 
-	bool CheckClear();
-	void ThrustOn();
-	void Explode();
-	void ResetExplodeTimer();
-	void ResetClearTimer();
+	void ApplyThrust(void);
+	void Explode(void);
+	void ResetExplodeTimer(void);
+	void ResetClearTimer(void);
+	void ResetGameOverTimer(void);
+	bool CheckClear(void);
 };

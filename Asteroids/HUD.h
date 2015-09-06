@@ -12,10 +12,24 @@ struct LetterData
 	bool Lines[16];
 };
 
-struct HiScoreData
+struct HighScoreData
 {
-	int Name[3];
+	std::string Name;
 	unsigned int Score;
+};
+
+struct HighScoreList
+{
+	SceneMesh *Spot;
+	SceneMesh *Letters;
+	SceneMesh *Numbers;
+};
+
+struct HighScoreLocation
+{
+	Vector3 Spot;
+	Vector3 Letters;
+	Vector3 Numbers;
 };
 
 class HUD : public Location
@@ -23,19 +37,26 @@ class HUD : public Location
 public:
 	HUD(void);
 
+	bool m_NewHighScore;
+
 	void Setup(Scene *scene);
 	void Update();
-	void DisplayHighScores(int list);
+	void DisplayHighScores(int list, bool on);
 	void Add(int score);
 	void LostLife(void);
 	void NewGame(void);
 	void GameOver(bool gameIsOver);
+	void DisplayGameOver(bool on);
+	void NewHighScore(bool on);
+	void SelectLetterUp(void);
+	void SelectLetterDown(void);
+	void SelectNextLetter(void);
 	int Lives(void);
 
 private:
 	bool m_GameOver;
-	bool m_HiScoreUpdated;
-	bool m_NewScore;
+	bool m_HighScoreUpdated;
+	bool m_HighScoreNameEntered;
 	int m_HighScoreRank; //The place where the new high score ranks at.
 	float m_HighScoreTimer;
 	float m_HighScoreTimerAmount;
@@ -43,37 +64,48 @@ private:
 	unsigned int m_PlayerHighScore;
 	unsigned int m_NextNewShipScore;
 	int m_Lives;
-	Scene *m_Scene;
-	SceneMesh *m_Letters;
-	SceneMesh *m_ScoreNumbers;
-	SceneMesh *m_HiScoreNumbers;
-	SceneMesh *m_GameOverLetters;
-	SceneMesh *m_InstructionLetters[4];
+	int m_HighScoreSelectionOn;
 
+	std::string m_HighScoreSelectedLetters;
 	std::string m_GameText[8];
 	std::string m_SaveFileName;
+
 	Vector3 m_HitsLocation;
 	Vector3 m_GameOverLocation;
 	Vector3 m_GameTextLocation[4];
 	Vector3 m_PlayerScoreLocation;
 	Vector3 m_PlayerHighScoreLocation;
-	Vector3 m_HighScoreListLocaiton;
-	HiScoreData m_HiScores[10];
-	HiScoreData m_NewHiScore;
-
-	NumberData Numbers[10];
+	Vector3 m_HighScoreTitleLocation;
+	Vector3 m_SelectionLettersLocation;
+	Vector3 m_NewHighScoreTextLocation[2];
 	Vector3 m_NumberLineStart[7];
 	Vector3 m_NumberLineEnd[7];
-
-	LetterData Letters[26];
 	Vector3 m_LetterLineStart[16];
 	Vector3 m_LetterLineEnd[16];
 
+	HighScoreData m_HighScores[10];
+	HighScoreList m_HighScoreList[10];
+	HighScoreLocation m_HighScoreListLocation[10];
+	HighScoreData m_NewHighScoreData;
+	NumberData Numbers[10];
+	LetterData Letters[26];
+
+	Scene *m_Scene;
+	SceneMesh *m_ScoreNumbers;
+	SceneMesh *m_HighScoreNumbers;
+	SceneMesh *m_GameOverLetters;
+	SceneMesh *m_SelectionLetters;
+	SceneMesh *m_HighScoreTitleLetters;
+	SceneMesh *m_NewHighScoreLetters[2];
+	SceneMesh *m_GameInstructionLetters[4];
+
 	void SaveHighScores(void);
 	void SetupTextMeshs(void);
+	void SetupNewScoreSelectMesh(void);
+	void SetupHighScoreList(void);
 	void ProcessNumber(SceneMesh *numbers, int number, Vector3 locationStart, float size);
 	void MakeNumbersMesh(SceneMesh *numbers, float locationX, int number, float size);
-	void ProcessTextLine(SceneMesh *letters, String textLine, Vector3 locationStart, float size);
+	void ProcessTextLine(SceneMesh *letters, std::string textLine, Vector3 locationStart, float size);
 	void MakeLettersMesh(SceneMesh *letters, float locationX, int letter, float size);
 	void InitializeNumberLine(void);
 	void InitializeLetterLine(void);

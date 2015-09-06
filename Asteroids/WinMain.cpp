@@ -6,7 +6,7 @@ using namespace Polycode;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Alpha 1.0");
+	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Alpha 1.2");
 	Asteroids *app = new Asteroids(view);
 
 	MSG Msg;

@@ -4,17 +4,41 @@ HUD::HUD(void)
 {
 	NewGame();
 
-	m_Letters = new SceneMesh(Mesh::LINE_MESH);
-	m_Letters->setColor(1.0, 1.0, 1.0, 1.0);
 	m_GameOverLetters = new SceneMesh(Mesh::LINE_MESH);
 	m_GameOverLetters->setColor(1.0, 1.0, 1.0, 0.85);
+	m_HighScoreTitleLetters = new SceneMesh(Mesh::LINE_MESH);
+	m_HighScoreTitleLetters->setColor(1.0, 1.0, 1.0, 0.85);
+	
+	m_GameOverLocation = Vector3(0, m_WindowHeight / 1.666, 0);
+	m_PlayerScoreLocation = Vector3(m_WindowWidth / 1.5, m_WindowHeight - 0.25f, 0);
+	m_HighScoreTitleLocation = Vector3(0, m_WindowHeight / 2.5, 0);
+	m_SelectionLettersLocation = 0;
 
 	for (int i = 0; i < 4; i++)
 	{
-		m_InstructionLetters[i] = new SceneMesh(Mesh::LINE_MESH);
-		m_InstructionLetters[i]->setColor(1.0, 1.0, 1.0, 0.85);
+		m_GameInstructionLetters[i] = new SceneMesh(Mesh::LINE_MESH);
+		m_GameInstructionLetters[i]->setColor(1.0, 1.0, 1.0, 0.85);
+
+		m_GameTextLocation[i] = Vector3(0, -m_WindowHeight / 1.5 + (i * -2.5), 0);
 	}
 
+	for (int i = 0; i < 2; i++)
+	{
+		m_NewHighScoreLetters[i] = new SceneMesh(Mesh::LINE_MESH);
+		m_NewHighScoreLetters[i]->setColor(1.0, 1.0, 1.0, 0.85);
+
+		m_NewHighScoreTextLocation[i] = Vector3(0, -m_WindowHeight / 1.25 + (i * -2.5), 0);
+	}
+
+	for (int i = 0; i < 5; i++)
+	{
+		m_HighScoreListLocation[i].Spot = Vector3(10, m_WindowHeight / 4 - (3.5 * i), 0);
+		m_HighScoreListLocation[i].Letters = Vector3(6, m_WindowHeight / 4 - (3.5 * i), 0);
+		m_HighScoreListLocation[i].Numbers = Vector3(-10, m_WindowHeight / 4 - (3.5 * i), 0);
+		m_HighScoreListLocation[i + 5].Spot = Vector3(10, m_WindowHeight / 4 - (3.5 * i), 0);
+		m_HighScoreListLocation[i + 5].Letters = Vector3(6, m_WindowHeight / 4 - (3.5 * i), 0);
+		m_HighScoreListLocation[i + 5].Numbers = Vector3(-10, m_WindowHeight / 4 - (3.5 * i), 0);
+	}
 
 	m_GameText[0] = "GAME OVER";
 	m_GameText[1] = "N KEY TO START OR RESTART GAME";
@@ -23,18 +47,12 @@ HUD::HUD(void)
 	m_GameText[4] = "RIGHT CTRL KEY FOR HYPERSPACE";
 	m_GameText[5] = "HIGH SCORE HEROES";
 	m_GameText[6] = "NEW HIGH SCORE";
-	m_GameText[7] = "ROTATE TO SELECT LETTER FIRE KEY WHEN DONE";
+	m_GameText[7] = "ROTATE TO SELECT LETTER FIRE KEY TO SELECT";
 
 	m_GameOver = true;
-	m_GameOverLocation = Vector3(0, 0, 0);
-	m_PlayerScoreLocation = Vector3(m_WindowWidth / 1.5, m_WindowHeight - 0.25f, 0);
-	m_PlayerHighScoreLocation = Vector3(0, m_WindowHeight - 0.25f, 0);
-	m_HighScoreListLocaiton = Vector3(0, -m_WindowHeight / 2, 0);
-
-	for (int i = 0; i < 4; i++)
-	{
-		m_GameTextLocation[i] = Vector3(0, -m_WindowHeight / 1.5 + (i * -2.5), 0);
-	}
+	m_NewHighScore = false;
+	m_HighScoreUpdated = false;
+	m_HighScoreNameEntered = false;
 
 	InitializeNumberLine();
 	InitializeLetterLine();
@@ -43,12 +61,8 @@ HUD::HUD(void)
 	// Set Default high scores list
 	for (int rank = 0; rank < 10; rank++)
 	{
-		for (int name = 0; name < 3; name++)
-		{
-			m_HiScores[rank].Name[name] = 0;
-		}
-
-		m_HiScores[rank].Score = (rank * -2000) + 20000;
+		m_HighScores[rank].Name = "AAA";
+		m_HighScores[rank].Score = (rank * -2000) + 20000;
 	}
 
 	m_SaveFileName = "HiScores.bin";
@@ -59,19 +73,21 @@ HUD::HUD(void)
 	// If file exists, get data.
 	if (file)
 	{
-		file.read((char *)&m_HiScores, sizeof(m_HiScores));
+		file.read((char *)&m_HighScores, sizeof(m_HighScores));
 	}
 
 	file.close(); // Close file.
 
 	// Pass high score from file (or 0 if no file), to high score display on top.
-	m_PlayerHighScore = m_HiScores[0].Score;
+	m_PlayerHighScore = m_HighScores[0].Score;	
 }
 
 void HUD::Setup(Scene * scene)
 {
 	m_Scene = scene;
 	SetupTextMeshs();
+	SetupHighScoreList();
+	DisplayHighScores(0, true);
 }
 
 void HUD::Update()
@@ -79,8 +95,20 @@ void HUD::Update()
 
 }
 
-void HUD::DisplayHighScores(int list)
+void HUD::DisplayHighScores(int list, bool on)
 {
+	m_HighScoreTitleLetters->enabled = on;
+
+	for (int i = 0; i < 5; i++)
+	{
+		m_HighScoreList[i + 5 - (list * 5)].Letters->enabled = false;
+		m_HighScoreList[i + 5 - (list * 5)].Numbers->enabled = false;
+		m_HighScoreList[i + 5 - (list * 5)].Spot->enabled = false;
+
+		m_HighScoreList[i + (list * 5)].Letters->enabled = on;
+		m_HighScoreList[i + (list * 5)].Numbers->enabled = on;
+		m_HighScoreList[i + (list * 5)].Spot->enabled = on;
+	}
 }
 
 void HUD::Add(int score)
@@ -97,15 +125,31 @@ void HUD::Add(int score)
 		m_PlayerHighScore = m_Score;
 
 	m_Scene->removeEntity(m_ScoreNumbers);
-	m_Scene->removeEntity(m_HiScoreNumbers);
+	m_Scene->removeEntity(m_HighScoreNumbers);
 	m_ScoreNumbers = NULL;
-	m_HiScoreNumbers = NULL;
+	m_HighScoreNumbers = NULL;
 	m_ScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
-	m_HiScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
+	m_HighScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
+
 	m_ScoreNumbers->setColor(1.0, 1.0, 1.0, 0.95);
-	m_HiScoreNumbers->setColor(1.0, 1.0, 1.0, 0.85);
+	m_HighScoreNumbers->setColor(1.0, 1.0, 1.0, 0.85);
+
+	float loc = 0;
+	unsigned int number = m_PlayerHighScore;
+
+	do
+	{
+		unsigned int digit = number % 10;
+		number /= 10;
+		loc++;
+	} while (number > 0);
+
+	m_PlayerHighScoreLocation = Vector3(-loc / 2, m_WindowHeight - 0.25f, 0);
+
 	ProcessNumber(m_ScoreNumbers, m_Score, m_PlayerScoreLocation, 1);
-	ProcessNumber(m_HiScoreNumbers, m_PlayerHighScore, m_PlayerHighScoreLocation, 1);
+	ProcessNumber(m_HighScoreNumbers, m_PlayerHighScore, m_PlayerHighScoreLocation, 0.5);
+	m_ScoreNumbers->cacheToVertexBuffer(true);
+	m_HighScoreNumbers->cacheToVertexBuffer(true);
 }
 
 void HUD::LostLife(void)
@@ -125,63 +169,125 @@ void HUD::NewGame(void)
 {
 	m_Lives = 4;
 	m_Score = 0;
-	m_NextNewShipScore = 10000;	
+	m_NextNewShipScore = 10000;
 }
 
 void HUD::GameOver(bool gameIsOver)
 {
 	if (gameIsOver)
 	{
-		m_GameOverLetters->enabled = true;
-
-		for (int i = 0; i < 4; i++)
+		if (!m_NewHighScore)
 		{
-			m_InstructionLetters[i]->enabled = true;
-		}
-
-		for (int rank = 0; rank < 10; rank++)
-		{
-			if (m_Score > m_HiScores[rank].Score)
+			for (int rank = 0; rank < 10; rank++)
 			{
-				m_NewScore = true;
-				m_HighScoreRank = rank;
-
-				if (rank < 9)
+				if (m_Score > m_HighScores[rank].Score)
 				{
-					HiScoreData oldScores[10];
-
-					for (int oldranks = m_HighScoreRank; oldranks < 10; oldranks++)
+					if (rank < 9)
 					{
-						oldScores[oldranks].Score = m_HiScores[oldranks].Score;
+						// Move High Score at rank list to make room for new High Score.
+						HighScoreData oldScores[10];
 
-						for (int name = 0; name < 3; name++)
-							oldScores[oldranks].Name[name] = m_HiScores[oldranks].Name[name];
+						for (int oldranks = rank; oldranks < 10; oldranks++)
+						{
+							oldScores[oldranks].Score = m_HighScores[oldranks].Score;
+							oldScores[oldranks].Name = m_HighScores[oldranks].Name;
+						}
+
+						for (int oldranks = rank; oldranks < 9; oldranks++)
+						{
+							m_HighScores[oldranks + 1].Score = oldScores[oldranks].Score;
+							m_HighScores[oldranks + 1].Name = oldScores[oldranks].Name;
+						}
 					}
 
-					for (int oldranks = m_HighScoreRank; oldranks < 9; oldranks++)
-					{
-						m_HiScores[oldranks + 1].Score = oldScores[oldranks].Score;
+					m_NewHighScore = true;
+					m_HighScoreNameEntered = false;
+					m_HighScoreRank = rank;
+					m_NewHighScoreData.Score = m_Score;
+					m_NewHighScoreData.Name = "";
+					m_HighScoreSelectionOn = 0;
+					m_HighScoreSelectedLetters = "AAA";
 
-						for (int name = 0; name < 3; name++)
-							m_HiScores[oldranks + 1].Name[name] = oldScores[oldranks].Name[name];
-					}
+					SetupNewScoreSelectMesh();
+
+					NewHighScore(true);
+
+					break;
 				}
-
-				m_NewHiScore.Score = m_Score;
-
-				SaveHighScores();
-
-				break;
 			}
+
 		}
 	}
 	else
 	{
 		m_GameOverLetters->enabled = false;
+		DisplayHighScores(0, false);
 
 		for (int i = 0; i < 4; i++)
 		{
-			m_InstructionLetters[i]->enabled = false;
+			m_GameInstructionLetters[i]->enabled = false;
+		}
+	}
+}
+
+void HUD::DisplayGameOver(bool on)
+{
+	m_GameOverLetters->enabled = on;
+}
+
+void HUD::NewHighScore(bool on)
+{
+	for (int i = 0; i < 2; i++)
+		m_NewHighScoreLetters[i]->enabled = on;
+}
+
+void HUD::SelectLetterUp(void)
+{
+	(int)m_HighScoreSelectedLetters[m_HighScoreSelectionOn] ++;
+
+	if ((int)m_HighScoreSelectedLetters[m_HighScoreSelectionOn] > 90)
+		m_HighScoreSelectedLetters[m_HighScoreSelectionOn] = char(65);
+
+	SetupNewScoreSelectMesh();
+}
+
+void HUD::SelectLetterDown(void)
+{
+	(int)m_HighScoreSelectedLetters[m_HighScoreSelectionOn] --;
+
+	if ((int)m_HighScoreSelectedLetters[m_HighScoreSelectionOn] < 65)
+		m_HighScoreSelectedLetters[m_HighScoreSelectionOn] = char(90);
+
+	SetupNewScoreSelectMesh();	
+}
+
+void HUD::SelectNextLetter(void)
+{
+	if (m_HighScoreSelectionOn < 2)
+	{		
+		m_HighScoreSelectionOn++;
+
+		m_HighScoreSelectedLetters[m_HighScoreSelectionOn] = m_HighScoreSelectedLetters[m_HighScoreSelectionOn - 1];
+
+		SetupNewScoreSelectMesh();
+	}
+	else
+	{
+		m_HighScoreNameEntered = true;
+		m_NewHighScore = false;
+		m_SelectionLetters->enabled = false;
+		m_NewHighScoreData.Name = m_HighScoreSelectedLetters;
+		m_HighScores[m_HighScoreRank] = m_NewHighScoreData;
+
+		SaveHighScores();
+		SetupHighScoreList();
+		NewHighScore(false);
+
+		m_GameOverLetters->enabled = true;
+
+		for (int i = 0; i < 4; i++)
+		{
+			m_GameInstructionLetters[i]->enabled = true;
 		}
 	}
 }
@@ -190,17 +296,58 @@ void HUD::SaveHighScores(void)
 {
 	// Save then close high scores to file.
 	std::ofstream file(m_SaveFileName, std::ios::binary);
-	file.write((char *)& m_HiScores, sizeof(m_HiScores));
+	file.write((char *)& m_HighScores, sizeof(m_HighScores));
 	file.close();
 }
 
 void HUD::SetupTextMeshs(void)
 {
 	ProcessTextLine(m_GameOverLetters, m_GameText[0], m_GameOverLocation, 1);
+	ProcessTextLine(m_HighScoreTitleLetters, m_GameText[5], m_HighScoreTitleLocation, 0.5);
+	m_HighScoreTitleLetters->enabled = false;
 
 	for (int i = 1; i < 5; i++)
 	{
-		ProcessTextLine(m_InstructionLetters[i-1], m_GameText[i], m_GameTextLocation[i-1], 0.5);
+		ProcessTextLine(m_GameInstructionLetters[i - 1], m_GameText[i], m_GameTextLocation[i - 1], 0.5);
+	}
+
+	for (int i = 0; i < 2; i++)
+	{
+		ProcessTextLine(m_NewHighScoreLetters[i], m_GameText[i + 6], m_NewHighScoreTextLocation[i], 0.5);
+		m_NewHighScoreLetters[i]->enabled = false;
+	}
+}
+
+void HUD::SetupNewScoreSelectMesh(void)
+{
+	m_Scene->removeEntity(m_SelectionLetters);
+	m_SelectionLetters = NULL;
+	m_SelectionLetters = new SceneMesh(Mesh::LINE_MESH);
+	m_SelectionLetters->setColor(1.0, 1.0, 1.0, 0.85);
+
+	ProcessTextLine(m_SelectionLetters, m_HighScoreSelectedLetters, m_SelectionLettersLocation, 1);
+}
+
+void HUD::SetupHighScoreList(void)
+{
+	for (int i = 0; i < 10; i++)
+	{
+		m_Scene->removeEntity(m_HighScoreList[i].Spot);
+		m_Scene->removeEntity(m_HighScoreList[i].Letters);
+		m_Scene->removeEntity(m_HighScoreList[i].Numbers);
+		m_HighScoreList[i].Spot = NULL;
+		m_HighScoreList[i].Numbers = NULL;
+		m_HighScoreList[i].Letters = NULL;
+		m_HighScoreList[i].Letters = new SceneMesh(Mesh::LINE_MESH);
+		m_HighScoreList[i].Numbers = new SceneMesh(Mesh::LINE_MESH);
+		m_HighScoreList[i].Spot = new SceneMesh(Mesh::LINE_MESH);
+
+		ProcessNumber(m_HighScoreList[i].Spot, i + 1, m_HighScoreListLocation[i].Spot, 1);
+		ProcessTextLine(m_HighScoreList[i].Letters, m_HighScores[i].Name, m_HighScoreListLocation[i].Letters, 0.6);
+		ProcessNumber(m_HighScoreList[i].Numbers, m_HighScores[i].Score, m_HighScoreListLocation[i].Numbers, 1);
+		m_HighScoreList[i].Letters->enabled = false;
+		m_HighScoreList[i].Numbers->enabled = false;
+		m_HighScoreList[i].Spot->enabled = false;
 	}
 }
 
@@ -246,7 +393,7 @@ void HUD::MakeNumbersMesh(SceneMesh *numbers, float location, int number, float 
 	}	
 }
 
-void HUD::ProcessTextLine(SceneMesh * letters, String textLine, Vector3 locationStart, float size)
+void HUD::ProcessTextLine(SceneMesh * letters, std::string textLine, Vector3 locationStart, float size)
 {
 	int textSize = textLine.size();
 	float charsize = 2.666;
