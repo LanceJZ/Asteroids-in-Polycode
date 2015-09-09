@@ -7,7 +7,7 @@ UFOControl::UFOControl() : Timer(false, 10000)
 	ResetTimer();
 }
 
-void UFOControl::Setup(CollisionScene * scene, std::shared_ptr<Player> player)
+void UFOControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
 {
 	m_Scene = scene;
 	pPlayer = player;
@@ -30,11 +30,28 @@ void UFOControl::Update(Number * elapsed)
 	if (pUFO->m_Active)
 	{
 		pUFO->Update(elapsed);
+	}
+	else if (pUFO->m_Hit)
+	{
+		SpawnExplosion(pUFO->m_Position, pUFO->m_Radius);
+		pUFO->m_Hit = false;
+	}
+	else if (pUFO->m_ResetTimer)
+	{
 		ResetTimer();
+		pUFO->m_ResetTimer = false;
 	}
 
 	if (pUFO->ShotActive())
 		pUFO->UpdateShot(elapsed);
+
+	for (int i = 0; i < pExplosions.size(); i++)
+	{
+		if (pExplosions[i]->m_Active)
+		{
+			pExplosions[i]->Update(elapsed);
+		}
+	}
 }
 
 void UFOControl::WaveNumber(int Wave)
@@ -44,7 +61,7 @@ void UFOControl::WaveNumber(int Wave)
 
 Vector3 UFOControl::Position(void)
 {
-	return pUFO->Position();
+	return pUFO->m_Position;
 }
 
 float UFOControl::ShotRadius(void)
@@ -54,7 +71,7 @@ float UFOControl::ShotRadius(void)
 
 float UFOControl::Radius(void)
 {
-	return pUFO->Radius();
+	return pUFO->m_Radius;
 }
 
 bool UFOControl::Active(void)
@@ -64,7 +81,7 @@ bool UFOControl::Active(void)
 
 SceneMesh * UFOControl::ShipBody(void)
 {
-	return pUFO->ShipBody();
+	return pUFO->m_UFOMesh;
 }
 
 void UFOControl::Deactivate(void)
@@ -98,15 +115,38 @@ bool UFOControl::ShotActive(void)
 
 void UFOControl::SpawnUFO()
 {
-	float spawnPercent = (float)(pow(0.985, (spawnCounter + 15) / (wave + 1)));
+	float spawnPercent = (float)(pow(0.915, (spawnCounter * 2) / ((wave * 2) + 1)));
 	int size;
 
-	if (Random::Number(1, 100) < spawnPercent * 100)
+	// Size 0 is the large one.
+	if (Random::Number(0, 99) < spawnPercent * 100)
 		size = 0;
 	else
 		size = 1;
 
 	pUFO->Spawn(size);
+}
+
+void UFOControl::SpawnExplosion(Vector3 position, float size)
+{
+	bool spawnExp = true;
+
+	for (int expCheck = 0; expCheck < pExplosions.size(); expCheck++)
+	{
+		if (!pExplosions[expCheck]->m_Active)
+		{
+			spawnExp = false;
+			pExplosions[expCheck]->Activate(position, size);
+			break;
+		}
+	}
+
+	if (spawnExp)
+	{
+		pExplosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
+		pExplosions[pExplosions.size() - 1]->Setup(m_Scene);
+		pExplosions[pExplosions.size() - 1]->Activate(position, size);
+	}
 }
 
 void UFOControl::ResetTimer()

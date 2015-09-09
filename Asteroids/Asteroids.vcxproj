@@ -27,8 +27,8 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -73,12 +73,12 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include\freetype2;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\PolycodeView;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include\AL;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\Dependencies\include\bullet</AdditionalIncludeDirectories>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,12 +90,14 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\lib;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\lib;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\lib;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\Dependencies\lib</AdditionalLibraryDirectories>
     </Link>
     <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Asteroids.cpp" />
     <ClCompile Include="Clear.cpp" />
+    <ClCompile Include="Dot.cpp" />
+    <ClCompile Include="Explosion.cpp" />
     <ClCompile Include="HUD.cpp" />
     <ClCompile Include="Location.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -110,16 +112,25 @@
   <ItemGroup>
     <ClInclude Include="Asteroids.h" />
     <ClInclude Include="Clear.h" />
+    <ClInclude Include="Dot.h" />
+    <ClInclude Include="Explosion.h" />
     <ClInclude Include="HUD.h" />
     <ClInclude Include="Location.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
+    <ClInclude Include="resource2.h" />
+    <ClInclude Include="resource3.h" />
     <ClInclude Include="Rock.h" />
     <ClInclude Include="Rocks.h" />
     <ClInclude Include="Score.h" />
     <ClInclude Include="Shot.h" />
     <ClInclude Include="UFO.h" />
     <ClInclude Include="UFOControl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

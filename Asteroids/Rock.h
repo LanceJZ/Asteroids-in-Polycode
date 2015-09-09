@@ -9,7 +9,7 @@ class Rock : public Location
 public:
 	Rock();
 
-	void Setup(CollisionScene *scene, int size, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo);
+	void Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo);
 	void RockOne(void);
 	void RockTwo(void);
 	void RockThree(void);
@@ -18,8 +18,7 @@ public:
 	void Spawn(void);
 	void Update(Number *elapsed);
 	void Deactivate(void);
-	bool CheckPlayerClear(void);
-	Vector3 Position(void);
+	bool PlayerNotClear(void);
 
 	float m_RockSpeed;
 	int m_Points;
@@ -27,10 +26,11 @@ public:
 	bool m_Hit;
 
 private:
-	SceneMesh *m_RockShape;
-	CollisionScene *m_Scene;
+	std::shared_ptr<CollisionScene> m_Scene;
 	std::shared_ptr<Player> pPlayer;
 	std::shared_ptr<UFOControl> pUFO;
+
+	SceneMesh *m_RockMesh;
 
 	void Enable(void);
 };

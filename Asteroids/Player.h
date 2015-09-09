@@ -1,16 +1,15 @@
 #pragma once
-#include "Random.h"
 #include "Location.h"
+#include "Random.h"
 #include "Shot.h"
 #include "HUD.h"
-//#include "Score.h"
 
 class Player : public Location
 {
 public:
 	Player(void);
 
-	void Setup(CollisionScene *scene);
+	void Setup(std::shared_ptr<CollisionScene> scene);
 	void Update(Number *elapsed);
 	void UpdateShots(Number *elapsed);
 	void UpdateGameOver(void);
@@ -24,7 +23,6 @@ public:
 	void Hit(void);
 	void UpdateLivesDisplay(void);
 	void GotPoints(int points);
-	bool GotHit(void);
 	void SetClear(void);
 	void Activate(void);
 	void Deactivate(void);
@@ -32,12 +30,14 @@ public:
 	void Reset(void);
 	void DeactivateShot(int shot);
 	bool ShotActive(int shot);
-	Vector3 Position(void);
+	bool GotHit(void);
 	float ShotRadius(int shot);
-	SceneMesh *ShipBody(void);
+	Vector3 Position(void);
+	Vector3 ShotPosition(int shot);
 	SceneMesh *ShotMesh(int shot);
 
 	std::unique_ptr<HUD> pHUD;
+	SceneMesh *m_ShipMesh;
 
 private:
 	bool shipTurning;
@@ -46,19 +46,15 @@ private:
 	bool clearToSpawn;
 	bool thrustOn;
 	int gameOverDisplay;
-	float timerExplode;
 	float timerExplodeAmount;
-	float timerClear;
 	float timerClearAmount;
-	float timerGameOver;
 	float timerGameOverAmount;
 
-	Timer *m_ExplodeTimer;
-	Timer *m_ClearTimer;
-	Timer *m_GameOverTimer;
+	std::unique_ptr<Timer> m_ExplodeTimer;
+	std::unique_ptr<Timer> m_ClearTimer;
+	std::unique_ptr<Timer> m_GameOverTimer;
 
-	CollisionScene *m_Scene;
-	SceneMesh *m_ShipBody;
+	std::shared_ptr<CollisionScene> m_Scene;
 	std::vector<Entity*> m_ShipLives;
 
 	std::unique_ptr<Shot> pShots[4];

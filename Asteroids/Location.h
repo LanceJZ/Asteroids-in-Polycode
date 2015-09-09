@@ -16,9 +16,10 @@ public:
 	Location();
 
 	void Update(Number *elapsed);
-	bool CirclesIntersect(Polycode::Vector3 Target, float TargetRadius);
+	bool CirclesIntersect(Vector3 Target, float TargetRadius);
 	bool m_Active;
 	float m_Radius;
+	Vector3 m_Position;
 
 protected:
 	const double Pi = 3.1415926535897932384626433832795;
@@ -26,9 +27,8 @@ protected:
 	int m_WindowHeight;
 	int m_WindowWidth;
 
-	Polycode::Vector3 m_Position;
-	Polycode::Vector3 m_Velocity;
-	Polycode::Vector3 m_Acceleration;
+	Vector3 m_Velocity;
+	Vector3 m_Acceleration;
 
 	Rotate m_Rotation; //In Degrees
 

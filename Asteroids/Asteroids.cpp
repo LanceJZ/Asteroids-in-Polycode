@@ -9,8 +9,8 @@ Asteroids::Asteroids(PolycodeView *view)
 	Random::Setup();
 	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
 	//  Core::resizeTo 	(int xRes, int yRes);	
-	core = new POLYCODE_CORE(view, 800, 720, false, true, 2, 1, 90, 0, true);
-	scene = new CollisionScene();
+	core = std::unique_ptr<Core>(new POLYCODE_CORE(view, 800, 720, false, true, 0, 0, 120, 0, true));
+	scene = std::shared_ptr<CollisionScene>(new CollisionScene());
 	scene->clearColor = Color(0.05, 0.025, 0.1, 1.0);
 	scene->useClearColor = true;
 
@@ -27,6 +27,7 @@ Asteroids::Asteroids(PolycodeView *view)
 
 Asteroids::~Asteroids()
 {
+	core->Shutdown();
 }
 
 void Asteroids::handleEvent(Event *event)
@@ -97,19 +98,21 @@ void Asteroids::handleEvent(Event *event)
 
 bool Asteroids::Update()
 {
-	Number elapsed = core->getElapsed();
+	Number *elapsed = 0;
+	Number frameelapsed = core->getElapsed();
+	elapsed = &frameelapsed;
 
 	if (pPlayer->m_Active)
-		pPlayer->Update(&elapsed);
+		pPlayer->Update(elapsed);
 	else
 	{
 		pPlayer->UpdateGameOver();
 	}
 
-	pPlayer->UpdateShots(&elapsed);
+	pPlayer->UpdateShots(elapsed);
 
-	pRocks->Update(&elapsed);
-	pUFOs->Update(&elapsed);
+	pRocks->Update(elapsed);
+	pUFOs->Update(elapsed);
 
 	return core->updateAndRender();
 }

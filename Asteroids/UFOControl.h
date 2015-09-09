@@ -1,11 +1,12 @@
 #pragma once
 #include "UFO.h"
+#include "Explosion.h"
 
 class UFOControl : public Polycode::Timer
 {
 public:
 	UFOControl();
-	void Setup(CollisionScene *scene, std::shared_ptr<Player> player);
+	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
 	void WaveNumber(int Wave);
 	void Deactivate(void);
@@ -20,9 +21,10 @@ public:
 	bool Active(void);
 
 private:
-	CollisionScene *m_Scene;
+	std::shared_ptr<CollisionScene> m_Scene;
 	std::shared_ptr<Player> pPlayer;
 	std::unique_ptr<UFO> pUFO;
+	std::vector<std::unique_ptr<Explosion>> pExplosions;
 
 	int wave;
 	int spawnCounter;
@@ -30,5 +32,6 @@ private:
 	float timerAmount;
 
 	void SpawnUFO();
+	void SpawnExplosion(Vector3 position, float size);
 	void ResetTimer();
 };

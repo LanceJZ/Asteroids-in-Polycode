@@ -1,8 +1,6 @@
 #pragma once
 #include <memory>
 #include <Polycode.h>
-#include "PolycodeView.h"
-#include "Polycode3DPhysics.h"
 #include "Random.h"
 #include "Player.h"
 #include "Rocks.h"
@@ -18,6 +16,7 @@ public:
 	bool Update();
 
 private:
-	Core *core;
-	CollisionScene *scene;
+	//std::unique_ptr<HUD> pHUD;
+	std::unique_ptr<Core> core;
+	std::shared_ptr<CollisionScene> scene;
 };

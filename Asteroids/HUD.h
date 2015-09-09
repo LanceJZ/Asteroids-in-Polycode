@@ -1,6 +1,7 @@
 #pragma once
 #include "Location.h"
 #include <fstream>
+#include <memory>
 
 struct NumberData
 {
@@ -39,13 +40,12 @@ public:
 
 	bool m_NewHighScore;
 
-	void Setup(Scene *scene);
-	void Update();
+	void Setup(std::shared_ptr<Scene> scene);
 	void DisplayHighScores(int list, bool on);
 	void Add(int score);
 	void LostLife(void);
 	void NewGame(void);
-	void GameOver(bool gameIsOver);
+	void GameOver(void);
 	void DisplayGameOver(bool on);
 	void NewHighScore(bool on);
 	void SelectLetterUp(void);
@@ -90,7 +90,7 @@ private:
 	NumberData Numbers[10];
 	LetterData Letters[26];
 
-	Scene *m_Scene;
+	std::shared_ptr<Scene> m_Scene;
 	SceneMesh *m_ScoreNumbers;
 	SceneMesh *m_HighScoreNumbers;
 	SceneMesh *m_GameOverLetters;
@@ -100,6 +100,8 @@ private:
 	SceneMesh *m_GameInstructionLetters[4];
 
 	void SaveHighScores(void);
+	void LoadHighScores(void);
+	void MakeDefaultHighScores(void);
 	void SetupTextMeshs(void);
 	void SetupNewScoreSelectMesh(void);
 	void SetupHighScoreList(void);

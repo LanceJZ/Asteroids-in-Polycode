@@ -8,27 +8,28 @@ class UFO :	public Location
 {
 public:
 	UFO();
-	void Setup(CollisionScene *scene, std::shared_ptr<Player> player);
+	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
 	void UpdateShot(Number *elapsed);
 	void Spawn(int size);
 	void Deactivate(void);
-	Vector3 Position(void);
-	SceneMesh *ShipBody(void);
-	float Radius(void);
-	SceneMesh *ShotMesh(void);
-	float ShotRadius(void);
-	bool ShotActive(void);
 	void DeactivateShot(void);
+	bool ShotActive(void);
+	float Radius(void);
+	float ShotRadius(void);
 
 	float m_RockSpeed;
 	int m_Points;
 	int m_Size;
+	bool m_Hit;
+	bool m_ResetTimer;
+
+	SceneMesh *ShotMesh(void);
+	SceneMesh *m_UFOMesh;
 
 private:
-	SceneMesh *m_UFOShape;
 	SceneMesh *shipLines;
-	CollisionScene *m_Scene;
+	std::shared_ptr<CollisionScene> m_Scene;
 	std::shared_ptr<Player> pPlayer;
 	std::unique_ptr<Shot> pShot;
 	Timer *m_FireTimer;

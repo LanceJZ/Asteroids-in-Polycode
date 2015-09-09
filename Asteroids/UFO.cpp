@@ -11,7 +11,7 @@ UFO::UFO()
 	pShot = std::unique_ptr<Shot>(new Shot());
 }
 
-void UFO::Setup(CollisionScene * scene, std::shared_ptr<Player> player)
+void UFO::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
 {
 	m_Scene = scene;
 	pPlayer = player;
@@ -19,18 +19,19 @@ void UFO::Setup(CollisionScene * scene, std::shared_ptr<Player> player)
 	//The left of screen, positive X is the direction for rotation zero.
 	//The top of the screen, positive Y is the direction for rotation zero.
 
-	m_UFOShape = new SceneMesh(Mesh::LINE_LOOP_MESH);
+	m_UFOMesh = new SceneMesh(Mesh::LINE_LOOP_MESH);
 
-	m_UFOShape->getMesh()->addVertex(1.9, -0.4, 0.0); // Far left edge Bottom line
-	m_UFOShape->getMesh()->addVertex(0.7, 0.4, 0.0); // Top line left edge
-	m_UFOShape->getMesh()->addVertex(0.3, 1.1, 0.0);
-	m_UFOShape->getMesh()->addVertex(-0.3, 1.1, 0.0);
-	m_UFOShape->getMesh()->addVertex(-0.7, 0.4, 0.0); // Top line right edge
-	m_UFOShape->getMesh()->addVertex(-1.9, -0.4, 0.0); // Right edge bottom line
-	m_UFOShape->getMesh()->addVertex(-0.8, -1.1, 0.0);
-	m_UFOShape->getMesh()->addVertex(0.8, -1.1, 0.0);
-	m_UFOShape->cacheToVertexBuffer(true);
-	m_UFOShape->setColor(0.7, 0.7, 0.9, 0.9);
+	m_UFOMesh->getMesh()->addVertex(1.9, -0.4, 0.0); // Far left edge Bottom line
+	m_UFOMesh->getMesh()->addVertex(0.7, 0.4, 0.0); // Top line left edge
+	m_UFOMesh->getMesh()->addVertex(0.3, 1.1, 0.0);
+	m_UFOMesh->getMesh()->addVertex(-0.3, 1.1, 0.0);
+	m_UFOMesh->getMesh()->addVertex(-0.7, 0.4, 0.0); // Top line right edge
+	m_UFOMesh->getMesh()->addVertex(-1.9, -0.4, 0.0); // Right edge bottom line
+	m_UFOMesh->getMesh()->addVertex(-0.8, -1.1, 0.0);
+	m_UFOMesh->getMesh()->addVertex(0.8, -1.1, 0.0);
+	m_UFOMesh->cacheToVertexBuffer(true);
+	m_UFOMesh->setColor(0.7, 0.7, 0.9, 0.9);
+	m_UFOMesh->lineSmooth = true;
 
 	shipLines = new SceneMesh(Mesh::LINE_MESH);
 
@@ -40,6 +41,7 @@ void UFO::Setup(CollisionScene * scene, std::shared_ptr<Player> player)
 	shipLines->getMesh()->addVertex(-1.9, -0.4, 0.0);
 	shipLines->cacheToVertexBuffer(true);
 	shipLines->setColor(0.7, 0.7, 0.9, 0.9);
+	shipLines->lineSmooth = true;
 
 	pShot->Setup(scene);
 }
@@ -77,7 +79,7 @@ void UFO::Update(Number * elapsed)
 		ChangeVector();
 	}
 
-	m_UFOShape->setPosition(m_Position);
+	m_UFOMesh->setPosition(m_Position);
 
 	if (m_Position.x > m_WindowWidth || m_Position.x < -m_WindowWidth)
 	{
@@ -88,13 +90,14 @@ void UFO::Update(Number * elapsed)
 
 	if (CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
 	{
-		CollisionResult *vsPlayer = &m_Scene->testCollision(m_UFOShape, pPlayer->ShipBody());
+		CollisionResult *vsPlayer = &m_Scene->testCollision(m_UFOMesh, pPlayer->m_ShipMesh);
 
 		if (vsPlayer->collided)
 		{
 			pPlayer->Hit();
 			pPlayer->GotPoints(m_Points);
 			Deactivate();
+			m_Hit = true;
 		}
 	}
 
@@ -102,15 +105,16 @@ void UFO::Update(Number * elapsed)
 	{
 		if (pPlayer->ShotActive(i))
 		{
-			if (CirclesIntersect(pPlayer->ShotMesh(i)->getPosition(), pPlayer->ShotRadius(i)))
+			if (CirclesIntersect(pPlayer->ShotPosition(i), pPlayer->ShotRadius(i)))
 			{
-				CollisionResult *rockVsPlayerShot = &m_Scene->testCollision(m_UFOShape, pPlayer->ShotMesh(i));
+				CollisionResult *rockVsPlayerShot = &m_Scene->testCollision(m_UFOMesh, pPlayer->ShotMesh(i));
 
 				if (rockVsPlayerShot->collided)
 				{
-					Deactivate();
 					pPlayer->DeactivateShot(i);
 					pPlayer->GotPoints(m_Points);
+					Deactivate();
+					m_Hit = true;
 					break;
 				}
 			}
@@ -124,7 +128,7 @@ void UFO::UpdateShot(Number * elapsed)
 
 	if (pShot->CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
 	{
-		CollisionResult *shotvsPlayer = &m_Scene->testCollision(pShot->ShotMesh(), pPlayer->ShipBody());
+		CollisionResult *shotvsPlayer = &m_Scene->testCollision(pShot->m_ShotMesh, pPlayer->m_ShipMesh);
 
 		if (shotvsPlayer->collided)
 		{
@@ -135,6 +139,7 @@ void UFO::UpdateShot(Number * elapsed)
 
 void UFO::Spawn(int size)
 {
+	m_Hit = false;
 	float var = Random::Number(0, 10);
 
 	if (var > 5)
@@ -157,22 +162,17 @@ void UFO::Spawn(int size)
 		m_AimedShot = false;
 		m_Points = 200;
 		m_Radius = 2;
-		m_UFOShape->setScale(Vector3(1, 1, 1));
+		m_UFOMesh->setScale(Vector3(1, 1, 1));
 	}
 	else if (size == 1)
 	{
 		m_AimedShot = true;
 		m_Points = 1000;
 		m_Radius = 1;
-		m_UFOShape->setScale(Vector3(0.5, 0.5, 0.5));
+		m_UFOMesh->setScale(Vector3(0.5, 0.5, 0.5));
 	}
 
 	ChangeVector();
-}
-
-Vector3 UFO::Position(void)
-{
-	return m_Position;
 }
 
 float UFO::ShotRadius(void)
@@ -190,14 +190,9 @@ void UFO::DeactivateShot(void)
 	pShot->Deactivate();
 }
 
-SceneMesh * UFO::ShipBody(void)
-{
-	return m_UFOShape;
-}
-
 SceneMesh * UFO::ShotMesh(void)
 {
-	return pShot->ShotMesh();
+	return pShot->m_ShotMesh;
 }
 
 float UFO::Radius(void)
@@ -207,10 +202,10 @@ float UFO::Radius(void)
 
 void UFO::Enable(void)
 {
-	m_Scene->addCollisionChild(m_UFOShape, CollisionEntity::SHAPE_MESH);
-	m_UFOShape->addChild(shipLines);
-	m_UFOShape->setPosition(m_Position);
-	m_UFOShape->enabled = true;
+	m_Scene->addCollisionChild(m_UFOMesh, CollisionEntity::SHAPE_MESH);
+	m_UFOMesh->addChild(shipLines);
+	m_UFOMesh->setPosition(m_Position);
+	m_UFOMesh->enabled = true;
 	m_Active = true;
 	ResetFireTimer();
 }
@@ -268,8 +263,9 @@ void UFO::FireRandomShot(void)
 
 void UFO::Deactivate(void)
 {
-	m_UFOShape->enabled = false;
-	m_Scene->removeCollision(m_UFOShape);
-	m_Scene->removeEntity(m_UFOShape);
+	m_UFOMesh->enabled = false;
+	m_Scene->removeCollision(m_UFOMesh);
+	m_Scene->removeEntity(m_UFOMesh);
 	m_Active = false;
+	m_ResetTimer = true;
 }
