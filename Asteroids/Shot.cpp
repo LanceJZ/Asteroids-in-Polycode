@@ -26,8 +26,8 @@ void Shot::Setup(std::shared_ptr<CollisionScene> scene)
 	m_ShotMesh->getMesh()->addVertex(size, 0, 0);
 	m_ShotMesh->getMesh()->addVertex(0, -size, 0);
 	m_ShotMesh->getMesh()->addVertex(0, size, 0);
-	m_ShotMesh->setColor(1, 1, 1, 1);
 	m_ShotMesh->cacheToVertexBuffer(true);
+	m_ShotMesh->setColor(1, 1, 1, 1);
 	m_ShotMesh->enabled = false;
 	m_Active = false;
 	m_Radius = 0.1;

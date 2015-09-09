@@ -36,28 +36,28 @@ public:
 	Vector3 ShotPosition(int shot);
 	SceneMesh *ShotMesh(int shot);
 
-	std::unique_ptr<HUD> pHUD;
+	std::unique_ptr<HUD> p_HUD;
 	SceneMesh *m_ShipMesh;
 
 private:
-	bool shipTurning;
-	bool hit;
-	bool gameOver;
-	bool clearToSpawn;
-	bool thrustOn;
-	int gameOverDisplay;
-	float timerExplodeAmount;
-	float timerClearAmount;
-	float timerGameOverAmount;
+	bool m_ShipTurning;
+	bool m_Hit;
+	bool m_GameOver;
+	bool m_ClearToSpawn;
+	bool m_ThrustOn;
+	int m_GameOverDisplay;
+	float m_TimerExplodeAmount;
+	float m_TimerClearAmount;
+	float m_TimerGameOverAmount;
 
-	std::unique_ptr<Timer> m_ExplodeTimer;
-	std::unique_ptr<Timer> m_ClearTimer;
-	std::unique_ptr<Timer> m_GameOverTimer;
+	std::unique_ptr<Timer> p_ExplodeTimer;
+	std::unique_ptr<Timer> p_ClearTimer;
+	std::unique_ptr<Timer> p_GameOverTimer;
 
-	std::shared_ptr<CollisionScene> m_Scene;
-	std::vector<Entity*> m_ShipLives;
+	std::shared_ptr<CollisionScene> p_Scene;
+	std::vector<Entity*> p_ShipLives;
 
-	std::unique_ptr<Shot> pShots[4];
+	std::unique_ptr<Shot> p_Shots[4];
 
 	void ApplyThrust(void);
 	void Explode(void);

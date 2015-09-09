@@ -10,8 +10,17 @@ void Dot::Setup(std::shared_ptr<CollisionScene> scene)
 {
 	m_Scene = scene;
 
-	m_DotMesh = new SceneMesh(Mesh::POINT_MESH);
-	m_DotMesh->getMesh()->addVertex(0, 0, 0);
+	//m_DotMesh = new SceneMesh(Mesh::POINT_MESH);
+	//m_DotMesh->getMesh()->addVertex(0, 0, 0);
+
+	m_DotMesh = new SceneMesh(Mesh::LINE_MESH);
+	float size = 0.025;
+
+	m_DotMesh->getMesh()->addVertex(-size, 0, 0);
+	m_DotMesh->getMesh()->addVertex(size, 0, 0);
+	m_DotMesh->getMesh()->addVertex(0, -size, 0);
+	m_DotMesh->getMesh()->addVertex(0, size, 0);
+
 	m_DotMesh->cacheToVertexBuffer(true);
 	m_DotMesh->enabled = false;
 	m_Active = false;
@@ -55,7 +64,7 @@ void Dot::Activate(Vector3 position, float size)
 	m_Active = true;
 	m_DotMesh->setPosition(m_Position);
 	m_DotMesh->enabled = true;
-	m_Alpha = 1;
+	m_Alpha = 0.85f;
 	m_Scene->addChild(m_DotMesh);
 	m_TimerLife->Reset();
 	m_TimerAmount = Random::Number(0.5, 2);

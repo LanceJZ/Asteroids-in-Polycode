@@ -12,11 +12,11 @@ void Rocks::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player>
 
 	NewGame();
 
-	for (int i = 0; i < 4; i++)
-	{
-		pExplosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
-		pExplosions[pExplosions.size() - 1]->Setup(m_Scene);
-	}
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	pExplosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
+	//	pExplosions[pExplosions.size() - 1]->Setup(m_Scene);
+	//}
 }
 
 void Rocks::Update(Number *elapsed)

@@ -2,21 +2,21 @@
 
 Player::Player(void)
 {
-	hit = false;
-	gameOver = true;
-	gameOverDisplay = 1;
+	m_Hit = false;
+	m_GameOver = true;
+	m_GameOverDisplay = 1;
 
-	timerClearAmount = 2.5;
-	timerExplodeAmount = 2.75;
-	timerGameOverAmount = 6.66f;
-	m_ExplodeTimer = std::unique_ptr<Timer>(new Timer(false, timerExplodeAmount));
-	m_ClearTimer = std::unique_ptr<Timer>(new Timer(false, timerClearAmount));
-	m_GameOverTimer = std::unique_ptr<Timer>(new Timer(false, timerGameOverAmount));
+	m_TimerClearAmount = 2.5;
+	m_TimerExplodeAmount = 2.75;
+	m_TimerGameOverAmount = 6.66f;
+	p_ExplodeTimer = std::unique_ptr<Timer>(new Timer(false, m_TimerExplodeAmount));
+	p_ClearTimer = std::unique_ptr<Timer>(new Timer(false, m_TimerClearAmount));
+	p_GameOverTimer = std::unique_ptr<Timer>(new Timer(false, m_TimerGameOverAmount));
 }
 
 void Player::Setup(std::shared_ptr<CollisionScene> scene)
 {
-	m_Scene = scene;
+	p_Scene = scene;
 	//Player original ship is 23 (11.5 x 2) pixels long, and 14 (8 x 2) pixels wide.
 	//The bottom is not flat. It starts 4 pixels from the side and 4 from the bottom and goes down at an angle to the bottom corner.
 	//The bottom is flat only from the upper part to the other side point 4 from the other side.
@@ -38,36 +38,36 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 
 	for (int i = 0; i < 4; i++)
 	{
-		pShots[i] = std::unique_ptr<Shot>(new Shot());
-		pShots[i]->Setup(scene);
+		p_Shots[i] = std::unique_ptr<Shot>(new Shot());
+		p_Shots[i]->Setup(scene);
 	}
 
-	pHUD = std::unique_ptr<HUD>(new HUD());
-	pHUD->Setup(scene);
+	p_HUD = std::unique_ptr<HUD>(new HUD());
+	p_HUD->Setup(scene);
 
 	ResetGameOverTimer();
 }
 
 float Player::ShotRadius(int shot)
 {
-	return pShots[shot]->m_Radius;
+	return p_Shots[shot]->m_Radius;
 }
 
 void Player::Activate(void)
 {
-	m_Scene->addCollisionChild(m_ShipMesh, CollisionEntity::SHAPE_MESH);
+	p_Scene->addCollisionChild(m_ShipMesh, CollisionEntity::SHAPE_MESH);
 	m_ShipMesh->enabled = true;
 	m_Active = true;
-	gameOver = false;
-	hit = false;
-	thrustOn = false;
+	m_GameOver = false;
+	m_Hit = false;
+	m_ThrustOn = false;
 }
 
 void Player::Deactivate(void)
 {
 	m_Active = false;
-	m_Scene->removeCollision(m_ShipMesh);
-	m_Scene->removeEntity(m_ShipMesh);
+	p_Scene->removeCollision(m_ShipMesh);
+	p_Scene->removeEntity(m_ShipMesh);
 	m_ShipMesh->enabled = false;
 }
 
@@ -75,25 +75,25 @@ void Player::NewGame(void)
 {
 	Reset();
 	Activate();
-	pHUD->NewGame();
-	pHUD->Add(0);
+	p_HUD->NewGame();
+	p_HUD->Add(0);
 
 	Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
 
-	for (int i = 0; i < pHUD->Lives(); i++)
+	for (int i = 0; i < p_HUD->Lives(); i++)
 	{
-		m_ShipLives.push_back(m_ShipMesh->Clone(true, false));
-		m_ShipLives.at(m_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
-		m_ShipLives.at(m_ShipLives.size() - 1)->setPosition(livesPos);
-		m_ShipLives.at(m_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
-		m_Scene->addChild(m_ShipLives.at(m_ShipLives.size() - 1));
+		p_ShipLives.push_back(m_ShipMesh->Clone(true, false));
+		p_ShipLives.at(p_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
+		p_ShipLives.at(p_ShipLives.size() - 1)->setPosition(livesPos);
+		p_ShipLives.at(p_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
+		p_Scene->addChild(p_ShipLives.at(p_ShipLives.size() - 1));
 		livesPos.x -= 2;
 	}
 }
 
 void Player::Reset(void)
 {
-	hit = false;
+	m_Hit = false;
 	m_Rotation.Amount = 180;
 	m_ShipMesh->setRotationEuler(Vector3(0, 0, m_Rotation.Amount));
 	m_Position = Vector3(0, 0, 0);
@@ -105,12 +105,12 @@ void Player::Reset(void)
 
 void Player::DeactivateShot(int shot)
 {
-	pShots[shot]->Deactivate();
+	p_Shots[shot]->Deactivate();
 }
 
 bool Player::ShotActive(int shot)
 {
-	return pShots[shot]->m_Active;
+	return p_Shots[shot]->m_Active;
 }
 
 Vector3 Player::Position(void)
@@ -120,38 +120,38 @@ Vector3 Player::Position(void)
 
 Vector3 Player::ShotPosition(int shot)
 {
-	return pShots[shot]->m_Position;
+	return p_Shots[shot]->m_Position;
 }
 
 SceneMesh *Player::ShotMesh(int shot)
 {
-	return pShots[shot]->m_ShotMesh;
+	return p_Shots[shot]->m_ShotMesh;
 }
 
 void Player::Update(Number *elapsed)
 {
 	Location::Update(elapsed);
 
-	if (hit)
+	if (m_Hit)
 	{
 		Explode();
 
-		if (m_ExplodeTimer->getElapsedf() > timerExplodeAmount)
+		if (p_ExplodeTimer->getElapsedf() > m_TimerExplodeAmount)
 		{
-			if (gameOver)
+			if (m_GameOver)
 			{
 				Deactivate();
-				pHUD->GameOver();
+				p_HUD->GameOver();
 			}
-			else if (clearToSpawn)
+			else if (m_ClearToSpawn)
 				Reset();
-			else if (!clearToSpawn)
+			else if (!m_ClearToSpawn)
 				m_ShipMesh->enabled = false;
 		}
 	}
 	else
 	{
-		if (thrustOn)
+		if (m_ThrustOn)
 			ApplyThrust();
 		else
 			m_Acceleration = 0;
@@ -167,24 +167,24 @@ void Player::UpdateShots(Number * elapsed)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		if (pShots[i]->m_Active)
-			pShots[i]->Update(elapsed);
+		if (p_Shots[i]->m_Active)
+			p_Shots[i]->Update(elapsed);
 	}
 }
 
 void Player::UpdateGameOver(void)
 {
-	if (!pHUD->m_NewHighScore)
+	if (!p_HUD->m_NewHighScore)
 	{
-		if (m_GameOverTimer->getElapsedf() > timerGameOverAmount)
+		if (p_GameOverTimer->getElapsedf() > m_TimerGameOverAmount)
 		{
 			ResetGameOverTimer();
-			pHUD->DisplayHighScores(gameOverDisplay, true);
+			p_HUD->DisplayHighScores(m_GameOverDisplay, true);
 
-			if (gameOverDisplay == 0)
-				gameOverDisplay = 1;
+			if (m_GameOverDisplay == 0)
+				m_GameOverDisplay = 1;
 			else
-				gameOverDisplay = 0;
+				m_GameOverDisplay = 0;
 
 		}
 	}
@@ -193,7 +193,7 @@ void Player::UpdateGameOver(void)
 void Player::TurnLeft(void)
 {
 
-	if (!hit)
+	if (!m_Hit)
 		m_Rotation.Velocity = -200;
 	else
 		m_Rotation.Velocity = 0;
@@ -201,7 +201,7 @@ void Player::TurnLeft(void)
 
 void Player::TurnRight(void)
 {
-	if (!hit)
+	if (!m_Hit)
 		m_Rotation.Velocity = 200;
 	else
 		m_Rotation.Velocity = 0;
@@ -214,26 +214,29 @@ void Player::TurnOff(void)
 
 void Player::Hyperspace(void)
 {
-	m_Velocity = Vector3(0, 0, 0);
-	m_Position.x = Random::Number(3, m_WindowWidth * 2 - 3) - m_WindowWidth;
-	m_Position.y = Random::Number(3, m_WindowHeight * 2 - 3) - m_WindowHeight;
+	if (!m_Hit)
+	{
+		m_Velocity = Vector3(0, 0, 0);
+		m_Position.x = Random::Number(3, m_WindowWidth * 2 - 3) - m_WindowWidth;
+		m_Position.y = Random::Number(3, m_WindowHeight * 2 - 3) - m_WindowHeight;
+	}
 }
 
 void Player::Hit(void)
 {
-	if (!hit)
+	if (!m_Hit)
 	{
-		pHUD->LostLife();
-		hit = true;
-		clearToSpawn = false;
+		p_HUD->LostLife();
+		m_Hit = true;
+		m_ClearToSpawn = false;
 		m_Velocity = m_Velocity * 0.1;
 		m_Acceleration = 0;
 		m_Rotation.Velocity = 0;
 		ResetExplodeTimer();
 
-		if (pHUD->Lives() < 1)
+		if (p_HUD->Lives() < 1)
 		{
-			gameOver = true;
+			m_GameOver = true;
 		}
 	}
 
@@ -242,41 +245,41 @@ void Player::Hit(void)
 
 void Player::UpdateLivesDisplay(void)
 {
-	for (size_t i = 0; i < m_ShipLives.size(); i++)
+	for (size_t i = 0; i < p_ShipLives.size(); i++)
 	{
-		m_Scene->removeEntity(m_ShipLives.at(i));
+		p_Scene->removeEntity(p_ShipLives.at(i));
 	}
 
-	m_ShipLives.clear();
+	p_ShipLives.clear();
 
 	Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
 
-	for (int i = 0; i < pHUD->Lives(); i++)
+	for (int i = 0; i < p_HUD->Lives(); i++)
 	{
-		m_ShipLives.push_back(m_ShipMesh->Clone(true, false));
-		m_ShipLives.at(m_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
-		m_ShipLives.at(m_ShipLives.size() - 1)->setPosition(livesPos);
-		m_ShipLives.at(m_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
-		m_Scene->addChild(m_ShipLives.at(m_ShipLives.size() - 1));
+		p_ShipLives.push_back(m_ShipMesh->Clone(true, false));
+		p_ShipLives.at(p_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
+		p_ShipLives.at(p_ShipLives.size() - 1)->setPosition(livesPos);
+		p_ShipLives.at(p_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
+		p_Scene->addChild(p_ShipLives.at(p_ShipLives.size() - 1));
 		livesPos.x -= 2;
 	}
 }
 
 void Player::GotPoints(int points)
 {
-	pHUD->Add(points);
+	p_HUD->Add(points);
 
 	UpdateLivesDisplay();
 }
 
 bool Player::GotHit(void)
 {
-	return hit;
+	return m_Hit;
 }
 
 void Player::SetClear(void)
 {
-	clearToSpawn = true;
+	m_ClearToSpawn = true;
 }
 
 bool Player::CheckClear(void)
@@ -286,12 +289,12 @@ bool Player::CheckClear(void)
 
 void Player::ThrustOn(void)
 {
-	thrustOn = true;
+	m_ThrustOn = true;
 }
 
 void Player::ThrustOff(void)
 {
-	thrustOn = false;
+	m_ThrustOn = false;
 }
 
 void Player::ApplyThrust(void)
@@ -322,35 +325,35 @@ void Player::Explode(void)
 
 void Player::ResetExplodeTimer(void)
 {
-	m_ExplodeTimer->Reset();
-	m_ExplodeTimer->setTimerInterval(timerExplodeAmount);
+	p_ExplodeTimer->Reset();
+	p_ExplodeTimer->setTimerInterval(m_TimerExplodeAmount);
 }
 
 void Player::ResetClearTimer(void)
 {
-	m_ClearTimer->Reset();
-	m_ClearTimer->setTimerInterval(timerClearAmount);
+	p_ClearTimer->Reset();
+	p_ClearTimer->setTimerInterval(m_TimerClearAmount);
 }
 
 void Player::ResetGameOverTimer(void)
 {
-	m_GameOverTimer->Reset();
-	m_GameOverTimer->setTimerInterval(timerGameOverAmount);
+	p_GameOverTimer->Reset();
+	p_GameOverTimer->setTimerInterval(m_TimerGameOverAmount);
 }
 
 void Player::FireShot(void)
 {
-	if (!hit)
+	if (!m_Hit)
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			if (!pShots[i]->m_Active)
+			if (!p_Shots[i]->m_Active)
 			{
 				float rad = (m_Rotation.Amount) * Pi / 180.0;
 				Vector3 direction = Vector3(cos(rad) * 40, sin(rad) * 40, 0);
 				Vector3 position = Vector3(cos(rad) * 1.15, sin(rad) * 1.15, 0);
 
-				pShots[i]->Fire(position + m_Position, direction + m_Velocity * 0.5, 1500, true);
+				p_Shots[i]->Fire(position + m_Position, direction + m_Velocity * 0.5, 1500, true);
 				break;
 			}
 		}

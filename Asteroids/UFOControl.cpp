@@ -20,13 +20,6 @@ void UFOControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Pl
 
 void UFOControl::Update(Number * elapsed)
 {
-	if (Timer::elapsed > timer && !pUFO->m_Active)
-	{
-		SpawnUFO();
-		ResetTimer();
-		spawnCounter++;
-	}
-
 	if (pUFO->m_Active)
 	{
 		pUFO->Update(elapsed);
@@ -40,6 +33,16 @@ void UFOControl::Update(Number * elapsed)
 	{
 		ResetTimer();
 		pUFO->m_ResetTimer = false;
+	}
+
+	if (!pUFO->m_Active)
+	{
+		if (Timer::elapsed > timer && !pUFO->m_Active)
+		{
+			SpawnUFO();
+			ResetTimer();
+			spawnCounter++;
+		}
 	}
 
 	if (pUFO->ShotActive())

@@ -80,16 +80,16 @@ void Asteroids::handleEvent(Event *event)
 					pPlayer->NewGame();
 				}
 
-				if (pPlayer->pHUD->m_NewHighScore)
+				if (pPlayer->p_HUD->m_NewHighScore)
 				{
 					if (inputEvent->keyCode() == KEY_LCTRL || inputEvent->keyCode() == KEY_SPACE)
-						pPlayer->pHUD->SelectNextLetter();
+						pPlayer->p_HUD->SelectNextLetter();
 
 					if (inputEvent->keyCode() == KEY_RIGHT || inputEvent->keyCode() == KEY_d)
-						pPlayer->pHUD->SelectLetterUp();
+						pPlayer->p_HUD->SelectLetterUp();
 
 					if (inputEvent->keyCode() == KEY_LEFT || inputEvent->keyCode() == KEY_a)
-						pPlayer->pHUD->SelectLetterDown();
+						pPlayer->p_HUD->SelectLetterDown();
 				}
 			}
 		}
