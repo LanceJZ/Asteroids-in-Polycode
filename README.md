@@ -1,6 +1,11 @@
 Asteroids in Polycode Alpha
 ===========================
 
+Version Alpha 1.35
+==================
+The player now has visual explosion effects, and they are grand. It took me over a day to get it working, and I found a few more bugs to squash, and made some more optimizations while I was at it. The audio effects have been pushed back because adding visual effects took so much longer than I had expected it too.
+I'll be working on the audio now, it is the only thing left to do.
+
 Version Alpha 1.3
 =================
 Now with program icon, visual effects for rocks and ufos. I've also figured out that the save file for debug and release are different, so I have the game check the size of the save file so it should not crash on load anymore.

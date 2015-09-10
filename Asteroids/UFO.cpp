@@ -4,9 +4,9 @@ UFO::UFO()
 {
 	m_FireTimer = new Timer(false, 2000);
 	m_VectorTimer = new Timer(false, 2500);
-	timerVectorAmount = 3;
-	timerFire = 2;
-	speed = 5;
+	m_VectorTimerAmount = 3;
+	m_FireTimerAmount = 2;
+	m_Speed = 5;
 
 	pShot = std::unique_ptr<Shot>(new Shot());
 }
@@ -50,7 +50,7 @@ void UFO::Update(Number * elapsed)
 {
 	Location::Update(elapsed);
 
-	if (m_FireTimer->getElapsedf() > timerFire)
+	if (m_FireTimer->getElapsedf() > m_FireTimerAmount)
 	{
 		if (!pShot->m_Active)
 		{
@@ -74,7 +74,7 @@ void UFO::Update(Number * elapsed)
 		}
 	}
 
-	if (m_VectorTimer->getElapsedf() > timerVector)
+	if (m_VectorTimer->getElapsedf() > m_VectorTimerAmount)
 	{
 		ChangeVector();
 	}
@@ -83,7 +83,7 @@ void UFO::Update(Number * elapsed)
 
 	if (m_Position.x > m_WindowWidth || m_Position.x < -m_WindowWidth)
 	{
-		Deactivate();
+		m_Done = true;
 	}
 
 	CheckForEdge();
@@ -96,7 +96,6 @@ void UFO::Update(Number * elapsed)
 		{
 			pPlayer->Hit();
 			pPlayer->GotPoints(m_Points);
-			Deactivate();
 			m_Hit = true;
 		}
 	}
@@ -113,7 +112,6 @@ void UFO::Update(Number * elapsed)
 				{
 					pPlayer->DeactivateShot(i);
 					pPlayer->GotPoints(m_Points);
-					Deactivate();
 					m_Hit = true;
 					break;
 				}
@@ -145,12 +143,12 @@ void UFO::Spawn(int size)
 	if (var > 5)
 	{
 		m_Position.x = -m_WindowWidth;
-		m_Velocity.x = speed;
+		m_Velocity.x = m_Speed;
 	}
 	else
 	{
 		m_Position.x = m_WindowWidth;
-		m_Velocity.x = -speed;
+		m_Velocity.x = -m_Speed;
 	}
 
 	m_Position.y = Random::Number(0, m_WindowHeight * 2) - m_WindowHeight;
@@ -161,15 +159,17 @@ void UFO::Spawn(int size)
 	{
 		m_AimedShot = false;
 		m_Points = 200;
-		m_Radius = 2;
 		m_UFOMesh->setScale(Vector3(1, 1, 1));
+
+		m_Radius = 4.5f;
 	}
 	else if (size == 1)
 	{
 		m_AimedShot = true;
 		m_Points = 1000;
-		m_Radius = 1;
 		m_UFOMesh->setScale(Vector3(0.5, 0.5, 0.5));
+
+		m_Radius = 2.5f;
 	}
 
 	ChangeVector();
@@ -213,15 +213,13 @@ void UFO::Enable(void)
 void UFO::ResetFireTimer(void)
 {
 	m_FireTimer->Reset();
-	m_FireTimer->setTimerInterval(timerFireAmount);
-	timerFire = timerFireAmount;
+	m_FireTimer->setTimerInterval(m_FireTimerAmount);
 }
 
 void UFO::ResetVectorTimer(void)
 {
 	m_VectorTimer->Reset();
-	m_VectorTimer->setTimerInterval(timerVectorAmount);
-	timerVector = timerVectorAmount;
+	m_VectorTimer->setTimerInterval(m_VectorTimerAmount);
 }
 
 void UFO::ChangeVector(void)
@@ -233,9 +231,9 @@ void UFO::ChangeVector(void)
 	if (var < 5)
 	{
 		if (m_Velocity.y == 0 && var < 2.5)
-			m_Velocity.y = speed;
+			m_Velocity.y = m_Speed;
 		else if (m_Velocity.y == 0)
-			m_Velocity.y = -speed;
+			m_Velocity.y = -m_Speed;
 		else
 			m_Velocity.y = 0;
 	}
@@ -267,5 +265,6 @@ void UFO::Deactivate(void)
 	m_Scene->removeCollision(m_UFOMesh);
 	m_Scene->removeEntity(m_UFOMesh);
 	m_Active = false;
-	m_ResetTimer = true;
+	m_Hit = false;
+	m_Done = false;
 }

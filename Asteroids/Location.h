@@ -20,17 +20,15 @@ public:
 	bool m_Active;
 	float m_Radius;
 	Vector3 m_Position;
+	Vector3 m_Velocity;
+	Vector3 m_Acceleration;
+	Rotate m_Rotation; //In Degrees
 
 protected:
 	const double Pi = 3.1415926535897932384626433832795;
 
 	int m_WindowHeight;
 	int m_WindowWidth;
-
-	Vector3 m_Velocity;
-	Vector3 m_Acceleration;
-
-	Rotate m_Rotation; //In Degrees
 
 	void CheckForEdge(void);
 };

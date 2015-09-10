@@ -45,24 +45,33 @@ private:
 	bool m_GameOver;
 	bool m_ClearToSpawn;
 	bool m_ThrustOn;
+	bool m_ThrustFlameOn;
 	int m_GameOverDisplay;
-	float m_TimerExplodeAmount;
-	float m_TimerClearAmount;
-	float m_TimerGameOverAmount;
+	float m_ExplodeTimerAmount;
+	float m_ClearTimerAmount;
+	float m_GameOverTimerAmount;
+	float m_FlameTimerAmount;
 
 	std::unique_ptr<Timer> p_ExplodeTimer;
 	std::unique_ptr<Timer> p_ClearTimer;
 	std::unique_ptr<Timer> p_GameOverTimer;
+	std::unique_ptr<Timer> p_FlameTimer;
 
 	std::shared_ptr<CollisionScene> p_Scene;
+	std::unique_ptr<Shot> p_Shots[4];
+	std::unique_ptr<Location> p_ExpLoc[6];
 	std::vector<Entity*> p_ShipLives;
 
-	std::unique_ptr<Shot> p_Shots[4];
+	SceneMesh *m_ShipExplosionMesh[6];
+	SceneMesh *m_ShipFlameMesh;
+	SceneMesh *m_ShipCloneMesh;
 
 	void ApplyThrust(void);
-	void Explode(void);
+	void StartExplode(void);
+	void UpdateExplode(Number *elapsed);
 	void ResetExplodeTimer(void);
 	void ResetClearTimer(void);
 	void ResetGameOverTimer(void);
+	void ResetFlameTimer(void);
 	bool CheckClear(void);
 };

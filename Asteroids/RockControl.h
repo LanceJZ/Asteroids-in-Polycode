@@ -9,10 +9,10 @@ struct RockCount
 	bool playerAllClear;
 };
 
-class Rocks
+class RockControl
 {
 public:
-	Rocks(void);
+	RockControl(void);
 
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo);
 	void Update(Number *elapsed);

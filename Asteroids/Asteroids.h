@@ -3,7 +3,7 @@
 #include <Polycode.h>
 #include "Random.h"
 #include "Player.h"
-#include "Rocks.h"
+#include "RockControl.h"
 #include "UFOControl.h"
 
 class Asteroids : public EventHandler

@@ -37,15 +37,17 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 	pUFO = ufo;
 
 	m_Points = 20;
-	m_Radius = 4;
 	m_RockSpeed = 5;
+
+	m_Radius = 6.5f;
+
 
 	if (m_Size == 1)
 	{
 		m_RockSpeed = 9.5;
 		m_RockMesh->Scale(Vector3(0.5, 0.5, 0.5));
 		m_Points = 50;
-		m_Radius = 3;
+		m_Radius = 4.5f;
 	}
 
 	if (m_Size == 2)
@@ -53,8 +55,9 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 		m_RockSpeed = 18;
 		m_RockMesh->Scale(Vector3(0.25, 0.25, 0.25));
 		m_Points = 100;
-		m_Radius = 2;
+		m_Radius = 2.5f;
 	}
+
 }
 
 void Rock::RockOne(void)
@@ -190,7 +193,7 @@ void Rock::Update(Number *elapsed)
 			if (UFOVSRock->collided)
 			{
 				m_Hit = true;
-				pUFO->Deactivate();
+				pUFO->HitRock();
 			}
 		}
 	}

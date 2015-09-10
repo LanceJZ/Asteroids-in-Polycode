@@ -22,7 +22,7 @@ public:
 	int m_Points;
 	int m_Size;
 	bool m_Hit;
-	bool m_ResetTimer;
+	bool m_Done;
 
 	SceneMesh *ShotMesh(void);
 	SceneMesh *m_UFOMesh;
@@ -37,11 +37,9 @@ private:
 
 	bool m_AimedShot;
 	bool m_FromRight;
-	float timerFire;
-	float timerFireAmount;
-	float timerVector;
-	float timerVectorAmount;
-	float speed;
+	float m_FireTimerAmount;
+	float m_VectorTimerAmount;
+	float m_Speed;
 
 	void Enable(void);
 	void ResetFireTimer(void);

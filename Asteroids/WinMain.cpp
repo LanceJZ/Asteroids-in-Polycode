@@ -10,7 +10,7 @@ std::unique_ptr<Asteroids> pAsteroids;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Alpha 1.31");
+	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Alpha 1.35");
 	pAsteroids = std::unique_ptr<Asteroids>( new Asteroids(view));
 	
 	HICON hMyIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYICON));

@@ -23,16 +23,19 @@ void UFOControl::Update(Number * elapsed)
 	if (pUFO->m_Active)
 	{
 		pUFO->Update(elapsed);
-	}
-	else if (pUFO->m_Hit)
-	{
-		SpawnExplosion(pUFO->m_Position, pUFO->m_Radius);
-		pUFO->m_Hit = false;
-	}
-	else if (pUFO->m_ResetTimer)
-	{
-		ResetTimer();
-		pUFO->m_ResetTimer = false;
+
+		if (pUFO->m_Hit)
+		{
+			SpawnExplosion(pUFO->m_Position, pUFO->m_Radius);
+			pUFO->Deactivate();
+			ResetTimer();
+		}
+
+		if (pUFO->m_Done)
+		{
+			pUFO->Deactivate();
+			ResetTimer();
+		}
 	}
 
 	if (!pUFO->m_Active)
@@ -60,6 +63,12 @@ void UFOControl::Update(Number * elapsed)
 void UFOControl::WaveNumber(int Wave)
 {
 	wave = Wave;
+}
+
+void UFOControl::HitRock(void)
+{
+	ResetTimer();
+	Deactivate();
 }
 
 Vector3 UFOControl::Position(void)

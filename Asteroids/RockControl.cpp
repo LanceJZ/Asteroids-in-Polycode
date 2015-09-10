@@ -1,10 +1,10 @@
-#include "Rocks.h"
+#include "RockControl.h"
 
-Rocks::Rocks(void)
+RockControl::RockControl(void)
 {
 }
 
-void Rocks::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo)
+void RockControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo)
 {
 	m_Scene = scene;
 	pPlayer = player;
@@ -19,7 +19,7 @@ void Rocks::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player>
 	//}
 }
 
-void Rocks::Update(Number *elapsed)
+void RockControl::Update(Number *elapsed)
 {
 	RockCount lRC = UpdateLargeRocks(elapsed, 0, true);
 
@@ -53,7 +53,7 @@ void Rocks::Update(Number *elapsed)
 	}
 }
 
-void Rocks::NewGame(void)
+void RockControl::NewGame(void)
 {
 	for (size_t rock = 0; rock < pLargeRocks.size(); rock++)
 	{
@@ -80,7 +80,7 @@ void Rocks::NewGame(void)
 	SpawnNewWave(m_NumberOfRocks);
 }
 
-RockCount Rocks::UpdateSmallRocks(Number * elapsed, int numberActive, bool clear)
+RockCount RockControl::UpdateSmallRocks(Number * elapsed, int numberActive, bool clear)
 {
 	RockCount rocks;
 	rocks.playerAllClear = clear;
@@ -120,7 +120,7 @@ RockCount Rocks::UpdateSmallRocks(Number * elapsed, int numberActive, bool clear
 	return rocks;
 }
 
-RockCount Rocks::UpdateMedRocks(Number * elapsed, int numberActive, bool clear)
+RockCount RockControl::UpdateMedRocks(Number * elapsed, int numberActive, bool clear)
 {
 	RockCount rocks;
 	rocks.playerAllClear = clear;
@@ -161,7 +161,7 @@ RockCount Rocks::UpdateMedRocks(Number * elapsed, int numberActive, bool clear)
 	return rocks;
 }
 
-RockCount Rocks::UpdateLargeRocks(Number * elapsed, int numberActive, bool clear)
+RockCount RockControl::UpdateLargeRocks(Number * elapsed, int numberActive, bool clear)
 {
 	RockCount rocks;
 	rocks.playerAllClear = clear;
@@ -202,15 +202,15 @@ RockCount Rocks::UpdateLargeRocks(Number * elapsed, int numberActive, bool clear
 	return rocks;
 }
 
-void Rocks::CreateRocks(void)
+void RockControl::CreateRocks(void)
 {
 }
 
-void Rocks::ClearAllRocks(void)
+void RockControl::ClearAllRocks(void)
 {
 }
 
-void Rocks::SpawnExplosion(Vector3 position, float size)
+void RockControl::SpawnExplosion(Vector3 position, float size)
 {
 	bool spawnExp = true;
 
@@ -232,7 +232,7 @@ void Rocks::SpawnExplosion(Vector3 position, float size)
 	}
 }
 
-void Rocks::SpawnNewWave(int NumberOfRocks)
+void RockControl::SpawnNewWave(int NumberOfRocks)
 {
 	for (int rock = 0; rock < NumberOfRocks; rock++)
 	{
@@ -257,7 +257,7 @@ void Rocks::SpawnNewWave(int NumberOfRocks)
 	}
 }
 
-void Rocks::SpawnMedRocks(Vector3 position)
+void RockControl::SpawnMedRocks(Vector3 position)
 {
 	for (int rock = 0; rock < 2; rock++)
 	{
@@ -282,7 +282,7 @@ void Rocks::SpawnMedRocks(Vector3 position)
 	}
 }
 
-void Rocks::SpawnSmallRocks(Vector3 position)
+void RockControl::SpawnSmallRocks(Vector3 position)
 {
 	for (int rock = 0; rock < 2; rock++)
 	{

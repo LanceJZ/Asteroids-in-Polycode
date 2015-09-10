@@ -30,7 +30,7 @@ void Shot::Setup(std::shared_ptr<CollisionScene> scene)
 	m_ShotMesh->setColor(1, 1, 1, 1);
 	m_ShotMesh->enabled = false;
 	m_Active = false;
-	m_Radius = 0.1;
+	m_Radius = 1.5f;
 }
 
 void Shot::Fire(Vector3 position, Vector3 velocity, float timer, bool playerShot)

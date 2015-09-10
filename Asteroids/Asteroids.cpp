@@ -1,7 +1,7 @@
 #include "Asteroids.h"
 
 std::shared_ptr<Player> pPlayer(new Player);
-std::shared_ptr<Rocks> pRocks(new Rocks);
+std::shared_ptr<RockControl> pRocks(new RockControl);
 std::shared_ptr<UFOControl> pUFOs(new UFOControl);
 
 Asteroids::Asteroids(PolycodeView *view)

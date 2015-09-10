@@ -9,6 +9,7 @@ public:
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
 	void WaveNumber(int Wave);
+	void HitRock(void);
 	void Deactivate(void);
 	void DeactivateShot(void);
 	void NewGame(void);

@@ -6,12 +6,19 @@ Player::Player(void)
 	m_GameOver = true;
 	m_GameOverDisplay = 1;
 
-	m_TimerClearAmount = 2.5;
-	m_TimerExplodeAmount = 2.75;
-	m_TimerGameOverAmount = 6.66f;
-	p_ExplodeTimer = std::unique_ptr<Timer>(new Timer(false, m_TimerExplodeAmount));
-	p_ClearTimer = std::unique_ptr<Timer>(new Timer(false, m_TimerClearAmount));
-	p_GameOverTimer = std::unique_ptr<Timer>(new Timer(false, m_TimerGameOverAmount));
+	m_ClearTimerAmount = 2.5;
+	m_ExplodeTimerAmount = 2.75;
+	m_GameOverTimerAmount = 6.66f;
+	m_FlameTimerAmount = 0.00666f;
+	p_ExplodeTimer = std::unique_ptr<Timer>(new Timer(false, m_ExplodeTimerAmount));
+	p_ClearTimer = std::unique_ptr<Timer>(new Timer(false, m_ClearTimerAmount));
+	p_GameOverTimer = std::unique_ptr<Timer>(new Timer(false, m_GameOverTimerAmount));
+	p_FlameTimer = std::unique_ptr<Timer>(new Timer(false, m_FlameTimerAmount));
+
+	for (int i = 0; i < 6; i++)
+	{
+		p_ExpLoc[i] = std::unique_ptr<Location>(new Location());
+	}
 }
 
 void Player::Setup(std::shared_ptr<CollisionScene> scene)
@@ -25,6 +32,39 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 	//The top of the screen, positive Y is the direction for rotation zero.
 
 	m_ShipMesh = new SceneMesh(Mesh::LINE_LOOP_MESH);
+	m_ShipCloneMesh = new SceneMesh(Mesh::LINE_LOOP_MESH);
+	m_ShipFlameMesh = new SceneMesh(Mesh::LINE_MESH);
+
+	for (int i = 0; i < 6; i++)
+	{
+		m_ShipExplosionMesh[i] = new SceneMesh(Mesh::LINE_MESH);		
+	}
+
+	m_ShipExplosionMesh[0]->getMesh()->addVertex(-1.15, 0.8, 0.0); //Top back tip.
+	m_ShipExplosionMesh[0]->getMesh()->addVertex(-0.1, 0.4, 0.0); // Half way to nose pointing to the left of screen.
+
+	m_ShipExplosionMesh[1]->getMesh()->addVertex(-0.1, 0.4, 0.0); // Half way to nose pointing to the left of screen.
+	m_ShipExplosionMesh[1]->getMesh()->addVertex(1.15, 0, 0.0); //Nose pointing to the left of screen.
+
+	m_ShipExplosionMesh[2]->getMesh()->addVertex(-1.15, -0.8, 0.0); //Bottom back tip.
+	m_ShipExplosionMesh[2]->getMesh()->addVertex(0.1, -0.4, 0.0); // Half way to nose pointing to the left of screen.
+
+	m_ShipExplosionMesh[3]->getMesh()->addVertex(0.1, -0.4, 0.0); // Half way to nose pointing to the left of screen.
+	m_ShipExplosionMesh[3]->getMesh()->addVertex(1.15, 0, 0.0); //Nose pointing to the left of screen.
+
+	m_ShipExplosionMesh[4]->getMesh()->addVertex(-0.95, -0.4, 0.0); //Bottom inside back.
+	m_ShipExplosionMesh[4]->getMesh()->addVertex(-0.95, 0, 0.0); // Half way to bottom back tip.
+
+	m_ShipExplosionMesh[5]->getMesh()->addVertex(-0.95, 0.4, 0.0); //Top inside back.
+	m_ShipExplosionMesh[5]->getMesh()->addVertex(-0.95, 0, 0.0); //Half way to top back tip.
+
+	for (int i = 0; i < 6; i++)
+	{
+		m_ShipExplosionMesh[i]->cacheToVertexBuffer(true);
+		m_ShipExplosionMesh[i]->lineSmooth = true;
+		m_ShipExplosionMesh[i]->enabled = false;
+		p_Scene->addChild(m_ShipExplosionMesh[i]);
+	}
 
 	m_ShipMesh->getMesh()->addVertex(-1.15, 0.8, 0.0); //Top back tip.
 	m_ShipMesh->getMesh()->addVertex(1.15, 0, 0.0); //Nose pointing to the left of screen.
@@ -34,7 +74,25 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 	m_ShipMesh->cacheToVertexBuffer(true);
 	m_ShipMesh->lineSmooth = true;
 
-	m_Radius = 1.5;
+	m_ShipCloneMesh->getMesh()->addVertex(-1.15, 0.8, 0.0); //Top back tip.
+	m_ShipCloneMesh->getMesh()->addVertex(1.15, 0, 0.0); //Nose pointing to the left of screen.
+	m_ShipCloneMesh->getMesh()->addVertex(-1.15, -0.8, 0.0); //Bottom back tip.
+	m_ShipCloneMesh->getMesh()->addVertex(-0.95, -0.4, 0.0); //Bottom inside back.
+	m_ShipCloneMesh->getMesh()->addVertex(-0.95, 0.4, 0.0); //Top inside back.
+	m_ShipCloneMesh->cacheToVertexBuffer(true);
+	m_ShipCloneMesh->lineSmooth = true;
+
+	m_Radius = 2.5f;
+
+	m_ShipFlameMesh->getMesh()->addVertex(-0.95, -0.4, 0.0); //Bottom inside back.
+	m_ShipFlameMesh->getMesh()->addVertex(-1.75, 0.0, 0.0); //Tip of flame.
+	m_ShipFlameMesh->getMesh()->addVertex(-0.95, 0.4, 0.0); //Top inside back.
+	m_ShipFlameMesh->getMesh()->addVertex(-1.75, 0.0, 0.0); //Tip of flame.
+	m_ShipFlameMesh->cacheToVertexBuffer(true);
+	m_ShipFlameMesh->lineSmooth = true;
+	m_ShipMesh->addChild(m_ShipFlameMesh);
+
+	m_ShipFlameMesh->enabled = false;
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -75,20 +133,11 @@ void Player::NewGame(void)
 {
 	Reset();
 	Activate();
+
 	p_HUD->NewGame();
 	p_HUD->Add(0);
-
-	Vector3 livesPos = Vector3(m_WindowWidth - 4, m_WindowHeight + -5, 0);
-
-	for (int i = 0; i < p_HUD->Lives(); i++)
-	{
-		p_ShipLives.push_back(m_ShipMesh->Clone(true, false));
-		p_ShipLives.at(p_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
-		p_ShipLives.at(p_ShipLives.size() - 1)->setPosition(livesPos);
-		p_ShipLives.at(p_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
-		p_Scene->addChild(p_ShipLives.at(p_ShipLives.size() - 1));
-		livesPos.x -= 2;
-	}
+	
+	UpdateLivesDisplay();
 }
 
 void Player::Reset(void)
@@ -134,10 +183,13 @@ void Player::Update(Number *elapsed)
 
 	if (m_Hit)
 	{
-		Explode();
+		UpdateExplode(elapsed);
 
-		if (p_ExplodeTimer->getElapsedf() > m_TimerExplodeAmount)
+		if (p_ExplodeTimer->getElapsedf() > m_ExplodeTimerAmount)
 		{
+			for (int i = 0; i < 6; i++)
+				m_ShipExplosionMesh[i]->enabled = false;
+
 			if (m_GameOver)
 			{
 				Deactivate();
@@ -145,8 +197,6 @@ void Player::Update(Number *elapsed)
 			}
 			else if (m_ClearToSpawn)
 				Reset();
-			else if (!m_ClearToSpawn)
-				m_ShipMesh->enabled = false;
 		}
 	}
 	else
@@ -176,7 +226,7 @@ void Player::UpdateGameOver(void)
 {
 	if (!p_HUD->m_NewHighScore)
 	{
-		if (p_GameOverTimer->getElapsedf() > m_TimerGameOverAmount)
+		if (p_GameOverTimer->getElapsedf() > m_GameOverTimerAmount)
 		{
 			ResetGameOverTimer();
 			p_HUD->DisplayHighScores(m_GameOverDisplay, true);
@@ -232,15 +282,16 @@ void Player::Hit(void)
 		m_Velocity = m_Velocity * 0.1;
 		m_Acceleration = 0;
 		m_Rotation.Velocity = 0;
+
 		ResetExplodeTimer();
+		StartExplode();
+		UpdateLivesDisplay();
 
 		if (p_HUD->Lives() < 1)
 		{
 			m_GameOver = true;
 		}
 	}
-
-	UpdateLivesDisplay();
 }
 
 void Player::UpdateLivesDisplay(void)
@@ -256,7 +307,7 @@ void Player::UpdateLivesDisplay(void)
 
 	for (int i = 0; i < p_HUD->Lives(); i++)
 	{
-		p_ShipLives.push_back(m_ShipMesh->Clone(true, false));
+		p_ShipLives.push_back(m_ShipCloneMesh->Clone(false, true));
 		p_ShipLives.at(p_ShipLives.size() - 1)->setColor(1.0, 1.0, 1.0, 0.95);
 		p_ShipLives.at(p_ShipLives.size() - 1)->setPosition(livesPos);
 		p_ShipLives.at(p_ShipLives.size() - 1)->setRotationEuler(Vector3(0, 0, 90));
@@ -295,6 +346,7 @@ void Player::ThrustOn(void)
 void Player::ThrustOff(void)
 {
 	m_ThrustOn = false;
+	m_ShipFlameMesh->enabled = false;
 }
 
 void Player::ApplyThrust(void)
@@ -316,29 +368,76 @@ void Player::ApplyThrust(void)
 
 	if (m_Velocity.y < -maxSp)
 		m_Velocity.y = -maxSp;
+
+	if (p_FlameTimer->getElapsedf() > m_FlameTimerAmount)
+	{
+		ResetFlameTimer();
+
+		if (m_ShipFlameMesh->enabled)
+			m_ShipFlameMesh->enabled = false;
+		else
+			m_ShipFlameMesh->enabled = true;
+	}
 }
 
-void Player::Explode(void)
+void Player::StartExplode(void)
 {
-	m_ShipMesh->setColor(1.0, 0.1, 0.1, 0.8);
+	for (int i = 0; i < 6; i++)
+	{
+		p_ExpLoc[i]->m_Position = m_Position;
+		p_ExpLoc[i]->m_Rotation = m_Rotation;
+		p_ExpLoc[i]->m_Rotation.Velocity = Random::Number(1, 50);
+
+		Vector3 vel = 0;
+		float angle = Random::Number(0, (float)Pi * 2);
+		float speed = Random::Number(0.666, 1.666);
+		vel.x = cos(angle) * speed;
+		vel.y = sin(angle) * speed;
+
+
+		p_ExpLoc[i]->m_Velocity = m_Velocity + vel;
+
+		m_ShipExplosionMesh[i]->enabled = true;
+	}
+
+	m_ShipMesh->enabled = false;
+}
+
+void Player::UpdateExplode(Number *elapsed)
+{
+	//m_ShipMesh->setColor(1.0, 0.1, 0.1, 0.8);
+	for (int i = 0; i < 6; i++)
+	{
+		p_ExpLoc[i]->Update(elapsed);
+
+		m_ShipExplosionMesh[i]->setPosition(p_ExpLoc[i]->m_Position);
+		m_ShipExplosionMesh[i]->setRotationEuler(Vector3(0, 0, p_ExpLoc[i]->m_Rotation.Amount));
+	}
+
 }
 
 void Player::ResetExplodeTimer(void)
 {
 	p_ExplodeTimer->Reset();
-	p_ExplodeTimer->setTimerInterval(m_TimerExplodeAmount);
+	p_ExplodeTimer->setTimerInterval(m_ExplodeTimerAmount);
 }
 
 void Player::ResetClearTimer(void)
 {
 	p_ClearTimer->Reset();
-	p_ClearTimer->setTimerInterval(m_TimerClearAmount);
+	p_ClearTimer->setTimerInterval(m_ClearTimerAmount);
 }
 
 void Player::ResetGameOverTimer(void)
 {
 	p_GameOverTimer->Reset();
-	p_GameOverTimer->setTimerInterval(m_TimerGameOverAmount);
+	p_GameOverTimer->setTimerInterval(m_GameOverTimerAmount);
+}
+
+void Player::ResetFlameTimer(void)
+{
+	p_FlameTimer->Reset();
+	p_FlameTimer->setTimerInterval(m_FlameTimerAmount);
 }
 
 void Player::FireShot(void)

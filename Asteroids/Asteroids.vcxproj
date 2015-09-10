@@ -103,7 +103,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Rock.cpp" />
-    <ClCompile Include="Rocks.cpp" />
+    <ClCompile Include="RockControl.cpp" />
     <ClCompile Include="Shot.cpp" />
     <ClCompile Include="UFO.cpp" />
     <ClCompile Include="UFOControl.cpp" />
@@ -123,7 +123,7 @@
     <ClInclude Include="resource2.h" />
     <ClInclude Include="resource3.h" />
     <ClInclude Include="Rock.h" />
-    <ClInclude Include="Rocks.h" />
+    <ClInclude Include="RockControl.h" />
     <ClInclude Include="Score.h" />
     <ClInclude Include="Shot.h" />
     <ClInclude Include="UFO.h" />

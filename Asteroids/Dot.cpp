@@ -20,7 +20,6 @@ void Dot::Setup(std::shared_ptr<CollisionScene> scene)
 	m_DotMesh->getMesh()->addVertex(size, 0, 0);
 	m_DotMesh->getMesh()->addVertex(0, -size, 0);
 	m_DotMesh->getMesh()->addVertex(0, size, 0);
-
 	m_DotMesh->cacheToVertexBuffer(true);
 	m_DotMesh->enabled = false;
 	m_Active = false;
@@ -45,15 +44,17 @@ void Dot::Activate(Vector3 position, float size)
 {
 	m_Position = position;
 
-	if (Random::Number(1, 2) > 1)
-		m_Position.x += Random::Number(0, size / 2) - size;
-	else
-		m_Position.x -= Random::Number(0, size / 2) - size;
+	size *= 0.666f;
 
-	if (Random::Number(1, 2) > 1)
-		m_Position.y += Random::Number(0, size / 2) - size;
+	if (Random::Number(0, 2) > 1)
+		m_Position.x += Random::Number(0, size) - size / 2;
 	else
-		m_Position.y -= Random::Number(0, size / 2) - size;
+		m_Position.x -= Random::Number(0, size) - size / 2;
+
+	if (Random::Number(0, 2) > 1)
+		m_Position.y += Random::Number(0, size) - size / 2;
+	else
+		m_Position.y -= Random::Number(0, size) - size / 2;
 	
 	float angle = Random::Number(0, (float)Pi * 2);
 	float speed = Random::Number(1.5, 6.66);
