@@ -63,12 +63,17 @@ HUD::HUD(void)
 
 void HUD::Setup(std::shared_ptr<Scene> scene)
 {
-	m_Scene = scene;
+	p_Scene = scene;
 	m_Score = 0;
 	SetupTextMeshs();
 	SetupHighScoreList();
 	DisplayHighScores(0, true);
 	Add(0);
+
+	//Sound -------
+	p_NewShipSound = std::unique_ptr<Sound>(new Sound("audio/NewShip.ogg"));
+	p_NewShipSound->setPitch(1.25);
+	p_NewShipSound->setVolume(0.5);
 }
 
 void HUD::DisplayHighScores(int list, bool on)
@@ -95,13 +100,16 @@ void HUD::Add(int score)
 	{
 		m_Lives++;
 		m_NextNewShipScore += 10000;
+
+		if (p_NewShipSound != NULL)
+			p_NewShipSound->Play();
 	}
 
 	if (m_Score > m_PlayerHighScore)
 		m_PlayerHighScore = m_Score;
 
-	m_Scene->removeEntity(m_ScoreNumbers);
-	m_Scene->removeEntity(m_HighScoreNumbers);
+	p_Scene->removeEntity(m_ScoreNumbers);
+	p_Scene->removeEntity(m_HighScoreNumbers);
 	m_ScoreNumbers = NULL;
 	m_HighScoreNumbers = NULL;
 	m_ScoreNumbers = new SceneMesh(Mesh::LINE_MESH);
@@ -318,7 +326,7 @@ void HUD::SetupTextMeshs(void)
 
 void HUD::SetupNewScoreSelectMesh(void)
 {
-	m_Scene->removeEntity(m_SelectionLetters);
+	p_Scene->removeEntity(m_SelectionLetters);
 	m_SelectionLetters = NULL;
 	m_SelectionLetters = new SceneMesh(Mesh::LINE_MESH);
 
@@ -329,9 +337,9 @@ void HUD::SetupHighScoreList(void)
 {
 	for (int i = 0; i < 10; i++)
 	{
-		m_Scene->removeEntity(m_HighScoreList[i].Spot);
-		m_Scene->removeEntity(m_HighScoreList[i].Letters);
-		m_Scene->removeEntity(m_HighScoreList[i].Numbers);
+		p_Scene->removeEntity(m_HighScoreList[i].Spot);
+		p_Scene->removeEntity(m_HighScoreList[i].Letters);
+		p_Scene->removeEntity(m_HighScoreList[i].Numbers);
 		m_HighScoreList[i].Spot = NULL;
 		m_HighScoreList[i].Numbers = NULL;
 		m_HighScoreList[i].Letters = NULL;
@@ -369,7 +377,7 @@ void HUD::ProcessNumber(SceneMesh *numbers, int number, Vector3 locationStart, f
 	//numbers->cacheToVertexBuffer(true);
 	//numbers->lineSmooth = true;
 	numbers->setColor(1.0, 1.0, 1.0, 0.85);
-	m_Scene->addChild(numbers);
+	p_Scene->addChild(numbers);
 }
 
 void HUD::MakeNumbersMesh(SceneMesh *numbers, float location, int number, float size)
@@ -411,7 +419,7 @@ void HUD::ProcessTextLine(SceneMesh * letters, std::string textLine, Vector3 loc
 	//letters->cacheToVertexBuffer(true);
 	//letters->lineSmooth = true;
 	letters->setColor(1.0, 1.0, 1.0, 0.85);
-	m_Scene->addChild(letters);
+	p_Scene->addChild(letters);
 }
 
 void HUD::MakeLettersMesh(SceneMesh *letters, float location, int letter, float size)

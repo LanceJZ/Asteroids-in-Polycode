@@ -9,14 +9,16 @@
 class Asteroids : public EventHandler
 {
 public:
-	Asteroids(PolycodeView *view);
+	Asteroids(PolycodeView *view, Core *core);
 	~Asteroids();
 
 	void handleEvent(Event *events);
-	bool Update();
+	bool Update(void);
+	bool FixedUpdate(void);
 
-private:
-	//std::unique_ptr<HUD> pHUD;
-	std::unique_ptr<Core> core;
-	std::shared_ptr<CollisionScene> scene;
+private:	
+	Core * pCore;
+	std::shared_ptr<CollisionScene> p_Scene;
+
+	bool m_Exit;
 };

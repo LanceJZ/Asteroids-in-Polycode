@@ -104,6 +104,17 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 	p_HUD->Setup(scene);
 
 	ResetGameOverTimer();
+
+	//Sounds -----
+	p_ShotSound = std::unique_ptr<Sound>(new Sound("audio/PlayerShot.ogg"));
+	p_ShotSound->setVolume(0.15);
+	p_ShotSound->setPitch(1.25);
+	p_ExplodeSound = std::unique_ptr<Sound>(new Sound("audio/PlayerExplosion.wav"));
+	p_ExplodeSound->setVolume(0.1);
+	p_ExplodeSound->setPitch(0.5);
+	p_ThrustSound = std::unique_ptr<Sound>(new Sound("audio/Thrust.ogg"));
+	p_ThrustSound->setVolume(0.5);
+	p_ThrustSound->setPitch(0.75);
 }
 
 float Player::ShotRadius(int shot)
@@ -244,7 +255,7 @@ void Player::TurnLeft(void)
 {
 
 	if (!m_Hit)
-		m_Rotation.Velocity = -200;
+		m_Rotation.Velocity = -300;
 	else
 		m_Rotation.Velocity = 0;
 }
@@ -252,7 +263,7 @@ void Player::TurnLeft(void)
 void Player::TurnRight(void)
 {
 	if (!m_Hit)
-		m_Rotation.Velocity = 200;
+		m_Rotation.Velocity = 300;
 	else
 		m_Rotation.Velocity = 0;
 }
@@ -276,6 +287,12 @@ void Player::Hit(void)
 {
 	if (!m_Hit)
 	{
+		if (p_ThrustSound != NULL)
+		{
+			p_ThrustSound->Stop();
+		}
+
+		p_ExplodeSound->Play();
 		p_HUD->LostLife();
 		m_Hit = true;
 		m_ClearToSpawn = false;
@@ -323,11 +340,6 @@ void Player::GotPoints(int points)
 	UpdateLivesDisplay();
 }
 
-bool Player::GotHit(void)
-{
-	return m_Hit;
-}
-
 void Player::SetClear(void)
 {
 	m_ClearToSpawn = true;
@@ -347,27 +359,25 @@ void Player::ThrustOff(void)
 {
 	m_ThrustOn = false;
 	m_ShipFlameMesh->enabled = false;
+
+	if (p_ThrustSound != NULL)
+	{
+		p_ThrustSound->Stop();
+	}
 }
 
 void Player::ApplyThrust(void)
 {
 	float rad = (m_Rotation.Amount) * Pi / 180.0;
 
-	m_Acceleration = Vector3(cos(rad) * 0.25, sin(rad) * 0.25, 0);
+	float thrustAmount = 1.15;
 
-	float maxSp = 50;
+	m_Acceleration = Vector3(cos(rad) * thrustAmount, sin(rad) * thrustAmount, 0);
 
-	if (m_Velocity.x > maxSp)
-		m_Velocity.x = maxSp;
+	float maxSp = 80;
 
-	if (m_Velocity.x < -maxSp)
-		m_Velocity.x = -maxSp;
-
-	if (m_Velocity.y > maxSp)
-		m_Velocity.y = maxSp;
-
-	if (m_Velocity.y < -maxSp)
-		m_Velocity.y = -maxSp;
+	m_Velocity.x = clampf(m_Velocity.x, -maxSp, maxSp);
+	m_Velocity.y = clampf(m_Velocity.y, -maxSp, maxSp);
 
 	if (p_FlameTimer->getElapsedf() > m_FlameTimerAmount)
 	{
@@ -377,6 +387,13 @@ void Player::ApplyThrust(void)
 			m_ShipFlameMesh->enabled = false;
 		else
 			m_ShipFlameMesh->enabled = true;
+	}
+
+	if (p_ThrustSound != NULL)
+	{
+		if (!m_GameOver && !m_Hit)
+			if (!p_ThrustSound->isPlaying())
+				p_ThrustSound->Play(true);
 	}
 }
 
@@ -448,11 +465,15 @@ void Player::FireShot(void)
 		{
 			if (!p_Shots[i]->m_Active)
 			{
+				float speed = 55;
 				float rad = (m_Rotation.Amount) * Pi / 180.0;
-				Vector3 direction = Vector3(cos(rad) * 40, sin(rad) * 40, 0);
+				Vector3 direction = Vector3(cos(rad) * speed, sin(rad) * speed, 0);
 				Vector3 position = Vector3(cos(rad) * 1.15, sin(rad) * 1.15, 0);
 
-				p_Shots[i]->Fire(position + m_Position, direction + m_Velocity * 0.5, 1500, true);
+				p_Shots[i]->Fire(position + m_Position, direction + m_Velocity * 0.5, 1500);
+
+				if (p_ShotSound != NULL)
+					p_ShotSound->Play();
 				break;
 			}
 		}

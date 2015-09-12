@@ -2,19 +2,19 @@
 
 UFO::UFO()
 {
-	m_FireTimer = new Timer(false, 2000);
-	m_VectorTimer = new Timer(false, 2500);
+	p_FireTimer = std::unique_ptr<Timer>(new Timer(false, 2000));
+	p_VectorTimer = std::unique_ptr<Timer>(new Timer(false, 2500));
 	m_VectorTimerAmount = 3;
 	m_FireTimerAmount = 2;
 	m_Speed = 5;
 
-	pShot = std::unique_ptr<Shot>(new Shot());
+	p_Shot = std::unique_ptr<Shot>(new Shot());
 }
 
 void UFO::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
 {
 	m_Scene = scene;
-	pPlayer = player;
+	p_Player = player;
 	
 	//The left of screen, positive X is the direction for rotation zero.
 	//The top of the screen, positive Y is the direction for rotation zero.
@@ -43,18 +43,29 @@ void UFO::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> p
 	shipLines->setColor(0.7, 0.7, 0.9, 0.9);
 	shipLines->lineSmooth = true;
 
-	pShot->Setup(scene);
+	p_Shot->Setup(scene);
+
+	//Sound -------------
+	p_ExplodeSound = std::unique_ptr<Sound>(new Sound("audio/UFOExplosion.wav"));
+	p_EngineLargeSound = std::unique_ptr<Sound>(new Sound("audio/UFOLarge.wav"));
+	p_EngineSmallSound = std::unique_ptr<Sound>(new Sound("audio/UFOSmall.wav"));
+	p_ShotSound = std::unique_ptr<Sound>(new Sound("audio/UFOShot.wav"));
+
+	p_ShotSound->setVolume(0.05);
+	p_ShotSound->setPitch(1.5);
+	p_EngineLargeSound->setVolume(0.075);
+	p_EngineSmallSound->setVolume(0.075);
+	p_ExplodeSound->setVolume(0.1);
+	p_ExplodeSound->setPitch(0.75);
 }
 
 void UFO::Update(Number * elapsed)
 {
-	Location::Update(elapsed);
-
-	if (m_FireTimer->getElapsedf() > m_FireTimerAmount)
+	if (p_FireTimer->getElapsedf() > m_FireTimerAmount)
 	{
-		if (!pShot->m_Active)
+		if (!p_Shot->m_Active)
 		{
-			if (m_AimedShot && pPlayer->m_Active)
+			if (m_AimedShot && p_Player->m_Active)
 			{
 				float var = Random::Number(0, 10);
 
@@ -74,10 +85,16 @@ void UFO::Update(Number * elapsed)
 		}
 	}
 
-	if (m_VectorTimer->getElapsedf() > m_VectorTimerAmount)
+	if (p_VectorTimer->getElapsedf() > m_VectorTimerAmount)
 	{
 		ChangeVector();
 	}
+
+}
+
+void UFO::FixedUpdate(Number * elapsed)
+{
+	Location::Update(elapsed);
 
 	m_UFOMesh->setPosition(m_Position);
 
@@ -88,30 +105,39 @@ void UFO::Update(Number * elapsed)
 
 	CheckForEdge();
 
-	if (CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
+	if (p_Player->m_Active && !p_Player->m_Hit)
 	{
-		CollisionResult *vsPlayer = &m_Scene->testCollision(m_UFOMesh, pPlayer->m_ShipMesh);
-
-		if (vsPlayer->collided)
+		if (CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 		{
-			pPlayer->Hit();
-			pPlayer->GotPoints(m_Points);
-			m_Hit = true;
+			CollisionResult *vsPlayer = &m_Scene->testCollision(m_UFOMesh, p_Player->m_ShipMesh);
+
+			if (vsPlayer->collided)
+			{
+				if (p_ExplodeSound != NULL)
+					p_ExplodeSound->Play();
+
+				p_Player->Hit();
+				p_Player->GotPoints(m_Points);
+				m_Hit = true;
+			}
 		}
 	}
 
 	for (int i = 0; i < 4; i++)
 	{
-		if (pPlayer->ShotActive(i))
+		if (p_Player->ShotActive(i))
 		{
-			if (CirclesIntersect(pPlayer->ShotPosition(i), pPlayer->ShotRadius(i)))
+			if (CirclesIntersect(p_Player->ShotPosition(i), p_Player->ShotRadius(i)))
 			{
-				CollisionResult *rockVsPlayerShot = &m_Scene->testCollision(m_UFOMesh, pPlayer->ShotMesh(i));
+				CollisionResult *rockVsPlayerShot = &m_Scene->testCollision(m_UFOMesh, p_Player->ShotMesh(i));
 
 				if (rockVsPlayerShot->collided)
 				{
-					pPlayer->DeactivateShot(i);
-					pPlayer->GotPoints(m_Points);
+					if (p_ExplodeSound != NULL)
+						p_ExplodeSound->Play();
+
+					p_Player->DeactivateShot(i);
+					p_Player->GotPoints(m_Points);
 					m_Hit = true;
 					break;
 				}
@@ -122,15 +148,16 @@ void UFO::Update(Number * elapsed)
 
 void UFO::UpdateShot(Number * elapsed)
 {
-	pShot->Update(elapsed);
+	p_Shot->Update(elapsed);
 
-	if (pShot->CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
+	if (p_Shot->CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 	{
-		CollisionResult *shotvsPlayer = &m_Scene->testCollision(pShot->m_ShotMesh, pPlayer->m_ShipMesh);
+		CollisionResult *shotvsPlayer = &m_Scene->testCollision(p_Shot->m_ShotMesh, p_Player->m_ShipMesh);
 
 		if (shotvsPlayer->collided)
 		{
-			pPlayer->Hit();
+			p_Player->Hit();
+			p_Shot->Deactivate();
 		}
 	}
 }
@@ -161,7 +188,13 @@ void UFO::Spawn(int size)
 		m_Points = 200;
 		m_UFOMesh->setScale(Vector3(1, 1, 1));
 
-		m_Radius = 4.5f;
+		m_Radius = 5.5f;
+
+		if (!p_Player->m_GameOver)
+		{
+			if (p_EngineLargeSound != NULL)
+				p_EngineLargeSound->Play(true);
+		}
 	}
 	else if (size == 1)
 	{
@@ -169,7 +202,13 @@ void UFO::Spawn(int size)
 		m_Points = 1000;
 		m_UFOMesh->setScale(Vector3(0.5, 0.5, 0.5));
 
-		m_Radius = 2.5f;
+		m_Radius = 3.5f;
+
+		if (!p_Player->m_GameOver)
+		{
+			if (p_EngineSmallSound != NULL)
+				p_EngineSmallSound->Play(true);
+		}
 	}
 
 	ChangeVector();
@@ -177,22 +216,22 @@ void UFO::Spawn(int size)
 
 float UFO::ShotRadius(void)
 {
-	return pShot->m_Radius;
+	return p_Shot->m_Radius;
 }
 
 bool UFO::ShotActive(void)
 {
-	return pShot->m_Active;
+	return p_Shot->m_Active;
 }
 
 void UFO::DeactivateShot(void)
 {
-	pShot->Deactivate();
+	p_Shot->Deactivate();
 }
 
 SceneMesh * UFO::ShotMesh(void)
 {
-	return pShot->m_ShotMesh;
+	return p_Shot->m_ShotMesh;
 }
 
 float UFO::Radius(void)
@@ -212,14 +251,14 @@ void UFO::Enable(void)
 
 void UFO::ResetFireTimer(void)
 {
-	m_FireTimer->Reset();
-	m_FireTimer->setTimerInterval(m_FireTimerAmount);
+	p_FireTimer->Reset();
+	p_FireTimer->setTimerInterval(m_FireTimerAmount);
 }
 
 void UFO::ResetVectorTimer(void)
 {
-	m_VectorTimer->Reset();
-	m_VectorTimer->setTimerInterval(m_VectorTimerAmount);
+	p_VectorTimer->Reset();
+	p_VectorTimer->setTimerInterval(m_VectorTimerAmount);
 }
 
 void UFO::ChangeVector(void)
@@ -243,15 +282,23 @@ void UFO::ChangeVector(void)
 
 void UFO::FireShot(float directionInRadians)
 {
-	pShot->Fire(Vector3(cos(directionInRadians) * 1.9, sin(directionInRadians) * 1.9, 0) + m_Position,
-		Vector3(cos(directionInRadians) * 30, sin(directionInRadians) * 30, 0) + m_Velocity * 0.5, 1300, false);
+	float speed = 47;
+
+	p_Shot->Fire(Vector3(cos(directionInRadians) * 1.9, sin(directionInRadians) * 1.9, 0) + m_Position,
+		Vector3(cos(directionInRadians) * speed, sin(directionInRadians) * speed, 0) + (m_Velocity * 0.25), 1300);
 
 	ResetFireTimer();
+
+	if (p_ShotSound != NULL)
+	{
+		if (!p_Player->m_GameOver)
+			p_ShotSound->Play();
+	}
 }
 
 void UFO::FireAimedShot(void)
 {
-	FireShot(atan2(pPlayer->Position().y - m_Position.y, pPlayer->Position().x - m_Position.x));
+	FireShot(atan2(p_Player->Position().y - m_Position.y, p_Player->Position().x - m_Position.x));
 }
 
 void UFO::FireRandomShot(void)
@@ -267,4 +314,10 @@ void UFO::Deactivate(void)
 	m_Active = false;
 	m_Hit = false;
 	m_Done = false;
+
+	if (p_EngineLargeSound != NULL)
+		p_EngineLargeSound->Stop();
+
+	if (p_EngineSmallSound != NULL)
+		p_EngineSmallSound->Stop();
 }

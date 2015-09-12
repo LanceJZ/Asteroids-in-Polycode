@@ -8,6 +8,7 @@ public:
 	UFOControl();
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
+	void FixedUpdate(Number *elapsed);
 	void WaveNumber(int Wave);
 	void HitRock(void);
 	void Deactivate(void);

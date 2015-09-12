@@ -23,6 +23,36 @@ void UFOControl::Update(Number * elapsed)
 	if (pUFO->m_Active)
 	{
 		pUFO->Update(elapsed);
+	}
+
+	if (!pUFO->m_Active)
+	{
+		if (Timer::elapsed > timer && !pUFO->m_Active)
+		{
+			SpawnUFO();
+			ResetTimer();
+			spawnCounter++;
+		}
+	}
+
+
+	for (int i = 0; i < pExplosions.size(); i++)
+	{
+		if (pExplosions[i]->m_Active)
+		{
+			pExplosions[i]->Update(elapsed);
+		}
+	}
+}
+
+void UFOControl::FixedUpdate(Number * elapsed)
+{
+	if (pUFO->ShotActive())
+		pUFO->UpdateShot(elapsed);
+
+	if (pUFO->m_Active)
+	{
+		pUFO->FixedUpdate(elapsed);
 
 		if (pUFO->m_Hit)
 		{
@@ -38,26 +68,6 @@ void UFOControl::Update(Number * elapsed)
 		}
 	}
 
-	if (!pUFO->m_Active)
-	{
-		if (Timer::elapsed > timer && !pUFO->m_Active)
-		{
-			SpawnUFO();
-			ResetTimer();
-			spawnCounter++;
-		}
-	}
-
-	if (pUFO->ShotActive())
-		pUFO->UpdateShot(elapsed);
-
-	for (int i = 0; i < pExplosions.size(); i++)
-	{
-		if (pExplosions[i]->m_Active)
-		{
-			pExplosions[i]->Update(elapsed);
-		}
-	}
 }
 
 void UFOControl::WaveNumber(int Wave)

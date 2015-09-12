@@ -32,19 +32,19 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 	m_RockMesh->lineSmooth = true;
 
 	m_Size = size;
-	m_Scene = scene;
-	pPlayer = player;
-	pUFO = ufo;
+	p_Scene = scene;
+	p_Player = player;
+	p_UFO = ufo;
 
 	m_Points = 20;
-	m_RockSpeed = 5;
+	m_RockSpeed = 6;
 
 	m_Radius = 6.5f;
 
 
 	if (m_Size == 1)
 	{
-		m_RockSpeed = 9.5;
+		m_RockSpeed = 10;
 		m_RockMesh->Scale(Vector3(0.5, 0.5, 0.5));
 		m_Points = 50;
 		m_Radius = 4.5f;
@@ -52,12 +52,16 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 
 	if (m_Size == 2)
 	{
-		m_RockSpeed = 18;
+		m_RockSpeed = 30;
 		m_RockMesh->Scale(Vector3(0.25, 0.25, 0.25));
 		m_Points = 100;
 		m_Radius = 2.5f;
 	}
 
+	// Sound ---------
+	p_ExplodeSound = std::unique_ptr<Sound>(new Sound("audio/RockExplosion.wav"));
+	p_ExplodeSound->setVolume(0.05);
+	p_ExplodeSound->setPitch(0.75);
 }
 
 void Rock::RockOne(void)
@@ -147,70 +151,79 @@ void Rock::Update(Number *elapsed)
 {
 	Location::Update(elapsed);
 
-	m_RockMesh->setPosition(m_Position);
-	CheckForEdge();
-
-	if (pPlayer->m_Active && !pPlayer->GotHit())
+	if (!m_Hit)
 	{
-		if (CirclesIntersect(pPlayer->Position(), pPlayer->m_Radius))
+		m_RockMesh->setPosition(m_Position);
+		CheckForEdge();
+
+		if (p_Player->m_Active && !p_Player->m_Hit)
 		{
-			CollisionResult *rockvsPlayer = &m_Scene->testCollision(m_RockMesh, pPlayer->m_ShipMesh);
-
-			if (rockvsPlayer->collided)
+			if (CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 			{
-				pPlayer->Hit();
-				pPlayer->GotPoints(m_Points);
-				m_Hit = true;
-			}
-		}
-	}
+				CollisionResult *rockvsPlayer = &p_Scene->testCollision(m_RockMesh, p_Player->m_ShipMesh);
 
-	for (int i = 0; i < 4; i++)
-	{
-		if (pPlayer->ShotActive(i))
-		{
-			if (CirclesIntersect(pPlayer->ShotMesh(i)->getPosition(), pPlayer->ShotRadius(i)))
-			{
-				CollisionResult *rockVsPlayerShot = &m_Scene->testCollision(m_RockMesh, pPlayer->ShotMesh(i));
-
-				if (rockVsPlayerShot->collided)
+				if (rockvsPlayer->collided)
 				{
+					p_Player->Hit();
+					p_Player->GotPoints(m_Points);
 					m_Hit = true;
-					pPlayer->DeactivateShot(i);
-					pPlayer->GotPoints(m_Points);
-					break;
 				}
 			}
 		}
-	}
 
-	if (pUFO->Active())
-	{
-		if (CirclesIntersect(pUFO->Position(), pUFO->Radius()))
+		for (int i = 0; i < 4; i++)
 		{
-			CollisionResult *UFOVSRock = &m_Scene->testCollision(m_RockMesh, pUFO->ShipBody());
-
-			if (UFOVSRock->collided)
+			if (p_Player->ShotActive(i))
 			{
-				m_Hit = true;
-				pUFO->HitRock();
-			}
-		}
-	}
+				if (CirclesIntersect(p_Player->ShotMesh(i)->getPosition(), p_Player->ShotRadius(i)))
+				{
+					CollisionResult *rockVsPlayerShot = &p_Scene->testCollision(m_RockMesh, p_Player->ShotMesh(i));
 
-	if (pUFO->ShotActive())
-	{
-		if (CirclesIntersect(pUFO->ShotMesh()->getPosition(), pUFO->ShotRadius()))
-		{
-			CollisionResult *UFOVSRock = &m_Scene->testCollision(m_RockMesh, pUFO->ShotMesh());
-
-			if (UFOVSRock->collided)
-			{
-				m_Hit = true;
-				pUFO->DeactivateShot();
+					if (rockVsPlayerShot->collided)
+					{
+						m_Hit = true;
+						p_Player->DeactivateShot(i);
+						p_Player->GotPoints(m_Points);
+						break;
+					}
+				}
 			}
 		}
 
+		if (p_UFO->Active())
+		{
+			if (CirclesIntersect(p_UFO->Position(), p_UFO->Radius()))
+			{
+				CollisionResult *UFOVSRock = &p_Scene->testCollision(m_RockMesh, p_UFO->ShipBody());
+
+				if (UFOVSRock->collided)
+				{
+					m_Hit = true;
+					p_UFO->HitRock();
+				}
+			}
+		}
+
+		if (p_UFO->ShotActive())
+		{
+			if (CirclesIntersect(p_UFO->ShotMesh()->getPosition(), p_UFO->ShotRadius()))
+			{
+				CollisionResult *UFOVSRock = &p_Scene->testCollision(m_RockMesh, p_UFO->ShotMesh());
+
+				if (UFOVSRock->collided)
+				{
+					m_Hit = true;
+					p_UFO->DeactivateShot();
+					
+				}
+			}
+		}
+
+		if (m_Hit && !p_Player->m_GameOver)
+		{
+			if (p_ExplodeSound != NULL)
+				p_ExplodeSound->Play();
+		}
 	}
 }
 
@@ -220,7 +233,7 @@ void Rock::Enable(void)
 	m_Hit = false;
 	m_RockMesh->setPosition(m_Position);
 	m_RockMesh->enabled = true;
-	m_Scene->addCollisionChild(m_RockMesh, CollisionEntity::SHAPE_MESH);
+	p_Scene->addCollisionChild(m_RockMesh, CollisionEntity::SHAPE_MESH);
 
 	float rad = Random::Number(0, (float)Pi * 2);
 	float amt = Random::Number(m_RockSpeed * 0.1, m_RockSpeed);
@@ -231,7 +244,7 @@ void Rock::Enable(void)
 void Rock::Deactivate(void)
 {
 	m_Active = false;
-	m_Scene->removeCollision(m_RockMesh);
-	m_Scene->removeEntity(m_RockMesh);
+	p_Scene->removeCollision(m_RockMesh);
+	p_Scene->removeEntity(m_RockMesh);
 	m_RockMesh->enabled = false;
 }

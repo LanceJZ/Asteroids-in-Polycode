@@ -14,11 +14,11 @@ void Dot::Setup(std::shared_ptr<CollisionScene> scene)
 	//m_DotMesh->getMesh()->addVertex(0, 0, 0);
 
 	m_DotMesh = new SceneMesh(Mesh::LINE_MESH);
-	float size = 0.025;
+	float size = 0.095;
 
 	m_DotMesh->getMesh()->addVertex(-size, 0, 0);
-	m_DotMesh->getMesh()->addVertex(size, 0, 0);
-	m_DotMesh->getMesh()->addVertex(0, -size, 0);
+	//m_DotMesh->getMesh()->addVertex(size, 0, 0);
+	//m_DotMesh->getMesh()->addVertex(0, -size, 0);
 	m_DotMesh->getMesh()->addVertex(0, size, 0);
 	m_DotMesh->cacheToVertexBuffer(true);
 	m_DotMesh->enabled = false;

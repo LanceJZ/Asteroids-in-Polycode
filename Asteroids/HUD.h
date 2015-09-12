@@ -90,7 +90,9 @@ private:
 	NumberData Numbers[10];
 	LetterData Letters[26];
 
-	std::shared_ptr<Scene> m_Scene;
+	std::shared_ptr<Scene> p_Scene;
+	std::unique_ptr<Sound> p_NewShipSound;
+
 	SceneMesh *m_ScoreNumbers;
 	SceneMesh *m_HighScoreNumbers;
 	SceneMesh *m_GameOverLetters;

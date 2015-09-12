@@ -26,9 +26,10 @@ public:
 	bool m_Hit;
 
 private:
-	std::shared_ptr<CollisionScene> m_Scene;
-	std::shared_ptr<Player> pPlayer;
-	std::shared_ptr<UFOControl> pUFO;
+	std::shared_ptr<CollisionScene> p_Scene;
+	std::shared_ptr<Player> p_Player;
+	std::shared_ptr<UFOControl> p_UFO;
+	std::unique_ptr<Sound> p_ExplodeSound;
 
 	SceneMesh *m_RockMesh;
 

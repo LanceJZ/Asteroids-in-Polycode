@@ -6,30 +6,42 @@ RockControl::RockControl(void)
 
 void RockControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo)
 {
-	m_Scene = scene;
-	pPlayer = player;
-	pUFO = ufo;
+	p_Scene = scene;
+	p_Player = player;
+	p_UFO = ufo;
 
 	NewGame();
 
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	pExplosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
-	//	pExplosions[pExplosions.size() - 1]->Setup(m_Scene);
-	//}
+	//Sound ------
+	p_BackgroundSound = std::unique_ptr<Sound>(new Sound("audio/Background.ogg"));
+	p_BackgroundSound->setVolume(0.25);
+	m_SoundOn = false;
 }
 
 void RockControl::Update(Number *elapsed)
 {
+	m_NumberOfRocksLastFrame = m_NumberOfRocksThisFrame;
+
 	RockCount lRC = UpdateLargeRocks(elapsed, 0, true);
 
 	RockCount mRC = UpdateMedRocks(elapsed, lRC.numberActive, lRC.playerAllClear);
 
 	RockCount rocksCounted = UpdateSmallRocks(elapsed, mRC.numberActive, mRC.playerAllClear);
 
-	if (rocksCounted.playerAllClear && !pUFO->ShotActive())
+	if (rocksCounted.playerAllClear && !p_UFO->ShotActive())
 	{
-		pPlayer->SetClear();
+		p_Player->SetClear();
+	}
+
+	m_NumberOfRocksThisFrame = rocksCounted.numberActive;
+	m_NumberOfRocksHit += lRC.numberHit + mRC.numberHit + rocksCounted.numberHit;
+
+	if (m_NumberOfRocksLastFrame != m_NumberOfRocksThisFrame)
+	{
+		Number pitch = 1;
+		pitch = clampf(sqrtf((clampf(m_NumberOfRocksHit - m_Wave * 9, 0, 162)) * 0.15), 1, 4);
+
+		p_BackgroundSound->setPitch(pitch);
 	}
 	
 	if (rocksCounted.numberActive < 1)
@@ -39,45 +51,65 @@ void RockControl::Update(Number *elapsed)
 
 		m_Wave++;
 
-		pUFO->WaveNumber(m_Wave);
+		p_UFO->WaveNumber(m_Wave);
 
 		SpawnNewWave(m_NumberOfRocks);
+		m_NumberOfRocksHit = 0;
 	}
 
-	for (int i = 0; i < pExplosions.size(); i++)
+	for (int i = 0; i < p_Explosions.size(); i++)
 	{
-		if (pExplosions[i]->m_Active)
+		if (p_Explosions[i]->m_Active)
 		{
-			pExplosions[i]->Update(elapsed);
+			p_Explosions[i]->Update(elapsed);
+		}
+	}
+
+	if (m_SoundOn)
+	{
+		if (p_Player->m_GameOver)
+		{
+			p_BackgroundSound->Stop();
+			m_SoundOn = false;
 		}
 	}
 }
 
 void RockControl::NewGame(void)
 {
-	for (size_t rock = 0; rock < pLargeRocks.size(); rock++)
+	for (size_t rock = 0; rock < p_LargeRocks.size(); rock++)
 	{
-		pLargeRocks.at(rock)->Deactivate();
+		p_LargeRocks.at(rock)->Deactivate();
 	}
 
-	for (size_t rock = 0; rock < pMedRocks.size(); rock++)
+	for (size_t rock = 0; rock < p_MedRocks.size(); rock++)
 	{
-		pMedRocks.at(rock)->Deactivate();
+		p_MedRocks.at(rock)->Deactivate();
 	}
 
-	for (size_t rock = 0; rock < pSmallRocks.size(); rock++)
+	for (size_t rock = 0; rock < p_SmallRocks.size(); rock++)
 	{
-		pSmallRocks.at(rock)->Deactivate();
+		p_SmallRocks.at(rock)->Deactivate();
 	}
 
-	for (size_t exp = 0; exp < pExplosions.size(); exp++)
+	for (size_t exp = 0; exp < p_Explosions.size(); exp++)
 	{
-		pExplosions.at(exp)->Deactivate();
+		p_Explosions.at(exp)->Deactivate();
 	}
 
 	m_NumberOfRocks = 4;
+	m_NumberOfRocksHit = 0;
 	m_Wave = 0;
 	SpawnNewWave(m_NumberOfRocks);
+
+	if (p_BackgroundSound != NULL)
+	{
+		if (!p_Player->m_GameOver)
+		{
+			p_BackgroundSound->Play(true);
+			m_SoundOn = true;
+		}
+	}
 }
 
 RockCount RockControl::UpdateSmallRocks(Number * elapsed, int numberActive, bool clear)
@@ -85,30 +117,32 @@ RockCount RockControl::UpdateSmallRocks(Number * elapsed, int numberActive, bool
 	RockCount rocks;
 	rocks.playerAllClear = clear;
 	rocks.numberActive = numberActive;
+	rocks.numberHit = 0;
 
-	for (size_t rock = 0; rock < pSmallRocks.size(); rock++)
+	for (size_t rock = 0; rock < p_SmallRocks.size(); rock++)
 	{
-		if (pSmallRocks.at(rock)->m_Active)
+		if (p_SmallRocks.at(rock)->m_Active)
 		{
-			pSmallRocks.at(rock)->Update(elapsed);
+			p_SmallRocks.at(rock)->Update(elapsed);
 
-			if (pSmallRocks.at(rock)->m_Hit)
+			if (p_SmallRocks.at(rock)->m_Hit)
 			{
-				SpawnExplosion(pSmallRocks.at(rock)->m_Position, pSmallRocks.at(rock)->m_Radius / 2);
-				pSmallRocks.at(rock)->Deactivate();
+				SpawnExplosion(p_SmallRocks.at(rock)->m_Position, p_SmallRocks.at(rock)->m_Radius / 2);
+				p_SmallRocks.at(rock)->Deactivate();
+				rocks.numberHit++;
 			}
 
 			rocks.numberActive++;
 		}
 	}
 
-	if (pPlayer->GotHit())
+	if (p_Player->m_Hit)
 	{
 		if (rocks.playerAllClear)
 		{
-			for (size_t rock = 0; rock < pSmallRocks.size(); rock++)
+			for (size_t rock = 0; rock < p_SmallRocks.size(); rock++)
 			{
-				if (pSmallRocks.at(rock)->PlayerNotClear())
+				if (p_SmallRocks.at(rock)->PlayerNotClear())
 				{
 					rocks.playerAllClear = false;
 					break;
@@ -125,31 +159,33 @@ RockCount RockControl::UpdateMedRocks(Number * elapsed, int numberActive, bool c
 	RockCount rocks;
 	rocks.playerAllClear = clear;
 	rocks.numberActive = numberActive;
+	rocks.numberHit = 0;
 
-	for (size_t rock = 0; rock < pMedRocks.size(); rock++)
+	for (size_t rock = 0; rock < p_MedRocks.size(); rock++)
 	{
-		if (pMedRocks.at(rock)->m_Active)
+		if (p_MedRocks.at(rock)->m_Active)
 		{
-			pMedRocks.at(rock)->Update(elapsed);
+			p_MedRocks.at(rock)->Update(elapsed);
 
-			if (pMedRocks.at(rock)->m_Hit)
+			if (p_MedRocks.at(rock)->m_Hit)
 			{
-				SpawnSmallRocks(pMedRocks.at(rock)->m_Position);
-				SpawnExplosion(pMedRocks.at(rock)->m_Position, pMedRocks.at(rock)->m_Radius / 2);
-				pMedRocks.at(rock)->Deactivate();
+				SpawnSmallRocks(p_MedRocks.at(rock)->m_Position);
+				SpawnExplosion(p_MedRocks.at(rock)->m_Position, p_MedRocks.at(rock)->m_Radius / 2);
+				p_MedRocks.at(rock)->Deactivate();
+				rocks.numberHit++;
 			}
 
 			rocks.numberActive++;
 		}
 	}
 
-	if (pPlayer->GotHit())
+	if (p_Player->m_Hit)
 	{
 		if (rocks.playerAllClear)
 		{
-			for (size_t rock = 0; rock < pMedRocks.size(); rock++)
+			for (size_t rock = 0; rock < p_MedRocks.size(); rock++)
 			{
-				if (pMedRocks.at(rock)->PlayerNotClear())
+				if (p_MedRocks.at(rock)->PlayerNotClear())
 				{
 					rocks.playerAllClear = false;
 					break;
@@ -166,31 +202,33 @@ RockCount RockControl::UpdateLargeRocks(Number * elapsed, int numberActive, bool
 	RockCount rocks;
 	rocks.playerAllClear = clear;
 	rocks.numberActive = numberActive;
+	rocks.numberHit = 0;
 
-	for (size_t rock = 0; rock < pLargeRocks.size(); rock++)
+	for (size_t rock = 0; rock < p_LargeRocks.size(); rock++)
 	{
-		if (pLargeRocks.at(rock)->m_Active)
+		if (p_LargeRocks.at(rock)->m_Active)
 		{
-			pLargeRocks.at(rock)->Update(elapsed);
+			p_LargeRocks.at(rock)->Update(elapsed);
 
-			if (pLargeRocks.at(rock)->m_Hit)
+			if (p_LargeRocks.at(rock)->m_Hit)
 			{
-				SpawnMedRocks(pLargeRocks.at(rock)->m_Position);
-				SpawnExplosion(pLargeRocks.at(rock)->m_Position, pLargeRocks.at(rock)->m_Radius / 2);
-				pLargeRocks.at(rock)->Deactivate();
+				SpawnMedRocks(p_LargeRocks.at(rock)->m_Position);
+				SpawnExplosion(p_LargeRocks.at(rock)->m_Position, p_LargeRocks.at(rock)->m_Radius / 2);
+				p_LargeRocks.at(rock)->Deactivate();
+				rocks.numberHit++;
 			}
 
 			rocks.numberActive++;
 		}
 	}
 
-	if (pPlayer->GotHit())
+	if (p_Player->m_Hit)
 	{
 		if (rocks.playerAllClear)
 		{
-			for (size_t rock = 0; rock < pLargeRocks.size(); rock++)
+			for (size_t rock = 0; rock < p_LargeRocks.size(); rock++)
 			{
-				if (pLargeRocks.at(rock)->PlayerNotClear())
+				if (p_LargeRocks.at(rock)->PlayerNotClear())
 				{
 					rocks.playerAllClear = false;
 					break;
@@ -214,21 +252,21 @@ void RockControl::SpawnExplosion(Vector3 position, float size)
 {
 	bool spawnExp = true;
 
-	for (int expCheck = 0; expCheck < pExplosions.size(); expCheck++)
+	for (int expCheck = 0; expCheck < p_Explosions.size(); expCheck++)
 	{
-		if (!pExplosions[expCheck]->m_Active)
+		if (!p_Explosions[expCheck]->m_Active)
 		{
 			spawnExp = false;
-			pExplosions[expCheck]->Activate(position, size);
+			p_Explosions[expCheck]->Activate(position, size);
 			break;
 		}
 	}
 
 	if (spawnExp)
 	{
-		pExplosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
-		pExplosions[pExplosions.size() - 1]->Setup(m_Scene);
-		pExplosions[pExplosions.size() - 1]->Activate(position, size);
+		p_Explosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
+		p_Explosions[p_Explosions.size() - 1]->Setup(p_Scene);
+		p_Explosions[p_Explosions.size() - 1]->Activate(position, size);
 	}
 }
 
@@ -238,21 +276,21 @@ void RockControl::SpawnNewWave(int NumberOfRocks)
 	{
 		bool spawnnewrock = true;
 
-		for (int rockcheck = 0; rockcheck < pLargeRocks.size(); rockcheck++)
+		for (int rockcheck = 0; rockcheck < p_LargeRocks.size(); rockcheck++)
 		{
-			if (!pLargeRocks[rockcheck]->m_Active)
+			if (!p_LargeRocks[rockcheck]->m_Active)
 			{
 				spawnnewrock = false;
-				pLargeRocks[rockcheck]->Spawn();
+				p_LargeRocks[rockcheck]->Spawn();
 				break;
 			}
 		}
 
 		if (spawnnewrock)
 		{
-			pLargeRocks.push_back(std::unique_ptr<Rock>(new Rock()));
-			pLargeRocks[pLargeRocks.size() - 1]->Setup(m_Scene, 0, pPlayer, pUFO);
-			pLargeRocks[pLargeRocks.size() - 1]->Spawn();
+			p_LargeRocks.push_back(std::unique_ptr<Rock>(new Rock()));
+			p_LargeRocks[p_LargeRocks.size() - 1]->Setup(p_Scene, 0, p_Player, p_UFO);
+			p_LargeRocks[p_LargeRocks.size() - 1]->Spawn();
 		}
 	}
 }
@@ -263,21 +301,21 @@ void RockControl::SpawnMedRocks(Vector3 position)
 	{
 		bool spawnnewrock = true;
 
-		for (int rockcheck = 0; rockcheck < pMedRocks.size(); rockcheck++)
+		for (int rockcheck = 0; rockcheck < p_MedRocks.size(); rockcheck++)
 		{
-			if (!pMedRocks[rockcheck]->m_Active)
+			if (!p_MedRocks[rockcheck]->m_Active)
 			{
 				spawnnewrock = false;
-				pMedRocks[rockcheck]->Spawn(position);
+				p_MedRocks[rockcheck]->Spawn(position);
 				break;
 			}
 		}
 
 		if (spawnnewrock)
 		{
-			pMedRocks.push_back(std::unique_ptr<Rock>(new Rock()));
-			pMedRocks[pMedRocks.size() - 1]->Setup(m_Scene, 1, pPlayer, pUFO);
-			pMedRocks[pMedRocks.size() - 1]->Spawn(position);
+			p_MedRocks.push_back(std::unique_ptr<Rock>(new Rock()));
+			p_MedRocks[p_MedRocks.size() - 1]->Setup(p_Scene, 1, p_Player, p_UFO);
+			p_MedRocks[p_MedRocks.size() - 1]->Spawn(position);
 		}
 	}
 }
@@ -288,21 +326,21 @@ void RockControl::SpawnSmallRocks(Vector3 position)
 	{
 		bool spawnnewrock = true;
 
-		for (int rockcheck = 0; rockcheck < pSmallRocks.size(); rockcheck++)
+		for (int rockcheck = 0; rockcheck < p_SmallRocks.size(); rockcheck++)
 		{
-			if (!pSmallRocks[rockcheck]->m_Active)
+			if (!p_SmallRocks[rockcheck]->m_Active)
 			{
 				spawnnewrock = false;
-				pSmallRocks[rockcheck]->Spawn(position);
+				p_SmallRocks[rockcheck]->Spawn(position);
 				break;
 			}
 		}
 
 		if (spawnnewrock)
 		{
-			pSmallRocks.push_back(std::unique_ptr<Rock>(new Rock()));
-			pSmallRocks[pSmallRocks.size() - 1]->Setup(m_Scene, 2, pPlayer, pUFO);
-			pSmallRocks[pSmallRocks.size() - 1]->Spawn(position);
+			p_SmallRocks.push_back(std::unique_ptr<Rock>(new Rock()));
+			p_SmallRocks[p_SmallRocks.size() - 1]->Setup(p_Scene, 2, p_Player, p_UFO);
+			p_SmallRocks[p_SmallRocks.size() - 1]->Spawn(position);
 		}
 	}
 }

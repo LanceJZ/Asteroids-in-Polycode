@@ -29,8 +29,10 @@ public:
 	void NewGame(void);
 	void Reset(void);
 	void DeactivateShot(int shot);
+
 	bool ShotActive(int shot);
-	bool GotHit(void);
+	bool m_Hit;
+	bool m_GameOver;
 	float ShotRadius(int shot);
 	Vector3 Position(void);
 	Vector3 ShotPosition(int shot);
@@ -41,8 +43,6 @@ public:
 
 private:
 	bool m_ShipTurning;
-	bool m_Hit;
-	bool m_GameOver;
 	bool m_ClearToSpawn;
 	bool m_ThrustOn;
 	bool m_ThrustFlameOn;
@@ -58,9 +58,13 @@ private:
 	std::unique_ptr<Timer> p_FlameTimer;
 
 	std::shared_ptr<CollisionScene> p_Scene;
+	std::unique_ptr<Sound> p_ShotSound;
+	std::unique_ptr<Sound> p_ExplodeSound;
+	std::unique_ptr<Sound> p_ThrustSound;
 	std::unique_ptr<Shot> p_Shots[4];
 	std::unique_ptr<Location> p_ExpLoc[6];
 	std::vector<Entity*> p_ShipLives;
+
 
 	SceneMesh *m_ShipExplosionMesh[6];
 	SceneMesh *m_ShipFlameMesh;
