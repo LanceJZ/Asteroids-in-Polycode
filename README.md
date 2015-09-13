@@ -1,6 +1,14 @@
 Asteroids in Polycode Alpha
 ===========================
 
+Version Beta 1.45
+=================
+I found a few more bug in my code. More optimizations. Performance on my desktop is back to 1.5% average CPU usage at 240FPS.
+I added a pause feature to the game, now you can pause the game play. I added instruction text to the Game Over screen for the pause. I fixed an error (I forgot to have it display the text.) to not display the Game Over text after a game is played and it went into Game Over again.
+I added copyright text to the Game Over screen.
+I will add an XP compiled version on request. I don't have one because I don't think I should be supporting an OS that is almost fifteen years old, and not a supported OS at that.
+I think this could be the release candidate. I'm pretty happy with it, and I think I got all the bugs now this time.
+
 Version Beta 1.40
 =================
 All visual and audio effects have been implemented. I created some new audio effects just for this version using Bfxr.
@@ -11,7 +19,7 @@ Changed dot mesh into one line.
 Tweaked speed of game objects for better game play.
 
 Game is complete except for more optimizations and if any bugs are found.
-Download and enjoy one of your choice! I’ve included a zip file, and a rar file of the game inside the Release folder. Pick what one works best for you, do the rar if you can, as you can see it is much smaller. Will not run on Windows XP, works on Windows 7, 8, and 10 only.
+Download and enjoy one of your choice! I’ve included a zip file, and a rar file of the game inside the Release folder. Pick what one works best for you, do the rar if you can, as you can see it is much smaller. Will not run on Windows XP. The game works on Windows 7, 8, and 10 only.
 
 
 Version Alpha 1.35
