@@ -12,6 +12,9 @@ public:
 	void Setup(std::shared_ptr<CollisionScene> scene);
 	void Update(Number *elapsed);
 	void UpdateShots(Number *elapsed);
+	void GotPoints(int points);
+	void DeactivateShot(int shot);
+	void Pause(bool paused);
 	void UpdateGameOver(void);
 	void TurnLeft(void);
 	void TurnRight(void);
@@ -22,16 +25,15 @@ public:
 	void Hyperspace(void);
 	void Hit(void);
 	void UpdateLivesDisplay(void);
-	void GotPoints(int points);
 	void SetClear(void);
 	void Activate(void);
 	void Deactivate(void);
 	void NewGame(void);
 	void Reset(void);
-	void DeactivateShot(int shot);
 
 	bool ShotActive(int shot);
 	bool m_Hit;
+	bool m_Spawn;
 	bool m_GameOver;
 	float ShotRadius(int shot);
 	Vector3 Position(void);

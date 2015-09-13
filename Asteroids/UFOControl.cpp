@@ -9,25 +9,40 @@ UFOControl::UFOControl() : Timer(false, 10000)
 
 void UFOControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
 {
-	m_Scene = scene;
-	pPlayer = player;
+	p_Scene = scene;
+	p_Player = player;
 
 	ResetTimer();
 
-	pUFO = std::unique_ptr<UFO>(new UFO());
-	pUFO->Setup(scene, player);
+	p_UFO = std::unique_ptr<UFO>(new UFO());
+	p_UFO->Setup(scene, player);
 }
 
 void UFOControl::Update(Number * elapsed)
 {
-	if (pUFO->m_Active)
-	{
-		pUFO->Update(elapsed);
-	}
+	if (p_UFO->ShotActive())
+		p_UFO->UpdateShot(elapsed);
 
-	if (!pUFO->m_Active)
+	if (p_UFO->m_Active)
 	{
-		if (Timer::elapsed > timer && !pUFO->m_Active)
+		p_UFO->Update(elapsed);
+
+		if (p_UFO->m_Hit)
+		{
+			SpawnExplosion(p_UFO->m_Position, p_UFO->m_Radius);
+			p_UFO->Deactivate();
+			ResetTimer();
+		}
+
+		if (p_UFO->m_Done)
+		{
+			p_UFO->Deactivate();
+			ResetTimer();
+		}
+	}
+	else
+	{
+		if (Timer::elapsed > timer && !p_UFO->m_Active)
 		{
 			SpawnUFO();
 			ResetTimer();
@@ -35,44 +50,23 @@ void UFOControl::Update(Number * elapsed)
 		}
 	}
 
-
-	for (int i = 0; i < pExplosions.size(); i++)
+	for (int i = 0; i < p_Explosions.size(); i++)
 	{
-		if (pExplosions[i]->m_Active)
+		if (p_Explosions[i]->m_Active)
 		{
-			pExplosions[i]->Update(elapsed);
+			p_Explosions[i]->Update(elapsed);
 		}
 	}
-}
-
-void UFOControl::FixedUpdate(Number * elapsed)
-{
-	if (pUFO->ShotActive())
-		pUFO->UpdateShot(elapsed);
-
-	if (pUFO->m_Active)
-	{
-		pUFO->FixedUpdate(elapsed);
-
-		if (pUFO->m_Hit)
-		{
-			SpawnExplosion(pUFO->m_Position, pUFO->m_Radius);
-			pUFO->Deactivate();
-			ResetTimer();
-		}
-
-		if (pUFO->m_Done)
-		{
-			pUFO->Deactivate();
-			ResetTimer();
-		}
-	}
-
 }
 
 void UFOControl::WaveNumber(int Wave)
 {
 	wave = Wave;
+}
+
+void UFOControl::Pause(bool paused)
+{
+	p_UFO->Pause(paused);
 }
 
 void UFOControl::HitRock(void)
@@ -83,37 +77,42 @@ void UFOControl::HitRock(void)
 
 Vector3 UFOControl::Position(void)
 {
-	return pUFO->m_Position;
+	return p_UFO->m_Position;
 }
 
 float UFOControl::ShotRadius(void)
 {
-	return pUFO->ShotRadius();
+	return p_UFO->ShotRadius();
 }
 
 float UFOControl::Radius(void)
 {
-	return pUFO->m_Radius;
+	return p_UFO->m_Radius;
 }
 
 bool UFOControl::Active(void)
 {
-	return pUFO->m_Active;
+	return p_UFO->m_Active;
+}
+
+bool UFOControl::PlayerNotClear(void)
+{
+	return p_UFO->PlayerNotClear();
 }
 
 SceneMesh * UFOControl::ShipBody(void)
 {
-	return pUFO->m_UFOMesh;
+	return p_UFO->m_UFOMesh;
 }
 
 void UFOControl::Deactivate(void)
 {
-	pUFO->Deactivate();
+	p_UFO->Deactivate();
 }
 
 void UFOControl::DeactivateShot(void)
 {
-	pUFO->DeactivateShot();
+	p_UFO->DeactivateShot();
 }
 
 void UFOControl::NewGame(void)
@@ -127,12 +126,12 @@ void UFOControl::NewGame(void)
 
 SceneMesh * UFOControl::ShotMesh(void)
 {
-	return pUFO->ShotMesh();
+	return p_UFO->ShotMesh();
 }
 
 bool UFOControl::ShotActive(void)
 {
-	return pUFO->ShotActive();
+	return p_UFO->ShotActive();
 }
 
 void UFOControl::SpawnUFO()
@@ -146,28 +145,28 @@ void UFOControl::SpawnUFO()
 	else
 		size = 1;
 
-	pUFO->Spawn(size);
+	p_UFO->Spawn(size);
 }
 
 void UFOControl::SpawnExplosion(Vector3 position, float size)
 {
 	bool spawnExp = true;
 
-	for (int expCheck = 0; expCheck < pExplosions.size(); expCheck++)
+	for (int expCheck = 0; expCheck < p_Explosions.size(); expCheck++)
 	{
-		if (!pExplosions[expCheck]->m_Active)
+		if (!p_Explosions[expCheck]->m_Active)
 		{
 			spawnExp = false;
-			pExplosions[expCheck]->Activate(position, size);
+			p_Explosions[expCheck]->Activate(position, size);
 			break;
 		}
 	}
 
 	if (spawnExp)
 	{
-		pExplosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
-		pExplosions[pExplosions.size() - 1]->Setup(m_Scene);
-		pExplosions[pExplosions.size() - 1]->Activate(position, size);
+		p_Explosions.push_back(std::unique_ptr<Explosion>(new Explosion()));
+		p_Explosions[p_Explosions.size() - 1]->Setup(p_Scene);
+		p_Explosions[p_Explosions.size() - 1]->Activate(position, size);
 	}
 }
 

@@ -11,7 +11,8 @@ Core *pCore;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Beta 1.00");
+	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Beta 1.45");
+	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
 	pCore = new POLYCODE_CORE(view, 800, 720, false, true, 0, 0, 240, 0, true);
 
 	pAsteroids = std::unique_ptr<Asteroids>( new Asteroids(view, pCore));
@@ -29,18 +30,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			DispatchMessage(&Msg);
 		}
 
-		do
-		{
-			pAsteroids->FixedUpdate();
-		} while (pCore->fixedUpdate());
-
 		pCore->doSleep();
-		pAsteroids->FixedUpdate();
-
-	} while (pAsteroids->Update());
-
-	pCore->Shutdown();
-	delete view;
+	} 
+	while (pAsteroids->Update());
 
 	return Msg.wParam;
 }

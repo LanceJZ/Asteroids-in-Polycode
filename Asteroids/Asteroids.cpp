@@ -9,7 +9,9 @@ Asteroids::Asteroids(PolycodeView *view, Core *core) : EventHandler()
 
 	pCore = core;
 	m_Exit = false;
-	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
+	m_Paused = false;
+	m_FiredShot = false;
+	m_Hyper = false;
 	//  Core::resizeTo 	(int xRes, int yRes);	
 	p_Scene = std::shared_ptr<CollisionScene>(new CollisionScene());
 	p_Scene->clearColor = Color(0.05, 0.025, 0.1, 1.0);
@@ -37,54 +39,16 @@ void Asteroids::handleEvent(Event *event)
 	{
 		InputEvent *inputEvent = (InputEvent*)event;
 
-		if (event->getEventCode() == WIM_CLOSE)
-		{
-			m_Exit = true;
-		}
-
 		if (inputEvent->keyCode() == KEY_ESCAPE)
 		{
 			m_Exit = true;
 		}
 
-		if (inputEvent->keyCode() == KEY_UP || inputEvent->keyCode() == KEY_w)
-		{
-			if (event->getEventCode() == InputEvent::EVENT_KEYDOWN)
-				p_Player->ThrustOn();
-			else if (event->getEventCode() == InputEvent::EVENT_KEYUP)
-				p_Player->ThrustOff();
-		}
-
-		if (inputEvent->keyCode() == KEY_LEFT || inputEvent->keyCode() == KEY_a)
-		{
-			if (event->getEventCode() == InputEvent::EVENT_KEYDOWN)
-				p_Player->TurnLeft();
-			else if (event->getEventCode() == InputEvent::EVENT_KEYUP)
-				p_Player->TurnOff();
-		}
-		else if (inputEvent->keyCode() == KEY_RIGHT || inputEvent->keyCode() == KEY_d)
-		{
-			if (event->getEventCode() == InputEvent::EVENT_KEYDOWN)
-				p_Player->TurnRight();
-			else if (event->getEventCode() == InputEvent::EVENT_KEYUP)
-				p_Player->TurnOff();
-		}
-
 		if (event->getEventCode() == InputEvent::EVENT_KEYDOWN)
 		{
-			if (inputEvent->keyCode() == KEY_LCTRL || inputEvent->keyCode() == KEY_SPACE)
-			{
-				p_Player->FireShot();
-			}
-
-			if (inputEvent->keyCode() == KEY_RCTRL)
-			{
-				p_Player->Hyperspace();
-			}
-
 			if (!p_Player->m_Active)
 			{
-				if (inputEvent->keyCode() == KEY_n)
+				if (inputEvent->keyCode() == KEY_n || inputEvent->keyCode() == KEY_RETURN)
 				{
 					p_Player->NewGame();
 					p_UFOs->NewGame();
@@ -103,43 +67,108 @@ void Asteroids::handleEvent(Event *event)
 						p_Player->p_HUD->SelectLetterDown();
 				}
 			}
+			else
+			{
+				if (inputEvent->keyCode() == KEY_p)
+				{
+					if (m_Paused)
+						m_Paused = false;
+					else
+						m_Paused = true;
+
+					p_UFOs->Pause(m_Paused);
+					p_Rocks->Pause(m_Paused);
+					p_Player->Pause(m_Paused);
+				}
+			}
+		}
+	}
+}
+
+void Asteroids::handlePlayerInput(void)
+{
+	bool key_up = pCore->getInput()->getKeyState(KEY_UP);
+	bool key_left = pCore->getInput()->getKeyState(KEY_LEFT);
+	bool key_right = pCore->getInput()->getKeyState(KEY_RIGHT);
+	bool key_lctrl = pCore->getInput()->getKeyState(KEY_LCTRL);
+	bool key_rctrl = pCore->getInput()->getKeyState(KEY_RCTRL);
+
+	bool key_w = pCore->getInput()->getKeyState(KEY_w);
+	bool key_a = pCore->getInput()->getKeyState(KEY_a);
+	bool key_d = pCore->getInput()->getKeyState(KEY_d);
+	bool key_space = pCore->getInput()->getKeyState(KEY_SPACE);
+
+	if (key_up || key_w)
+	{
+		p_Player->ThrustOn();
+	}
+	else
+	{
+		p_Player->ThrustOff();
+	}
+	
+	if (key_left || key_a || key_right || key_d)
+	{
+		if (key_left || key_a)
+			p_Player->TurnLeft();
+
+		if (key_right || key_d)
+			p_Player->TurnRight();
+	}
+	else
+	{
+		p_Player->TurnOff();
+	}
+
+	if (key_lctrl || key_space)
+	{
+		if (!m_FiredShot)
+		{
+			p_Player->FireShot();
+			m_FiredShot = true;
+		}
+	}
+	else
+	{
+		m_FiredShot = false;
+	}
+
+	if (key_rctrl)
+	{
+		if (!m_Hyper)
+		{
+			p_Player->Hyperspace();
+			m_Hyper = true;
+		}
+		else
+		{
+			m_Hyper = false;
 		}
 	}
 }
 
 bool Asteroids::Update()
 {
-	Number *elapsed = 0;
-	Number frameelapsed = pCore->getElapsed();
-	elapsed = &frameelapsed;
-
-	p_UFOs->Update(elapsed);
-
-	if (m_Exit)
+	if (!m_Paused)
 	{
-		return false;
+		Number *elapsed = 0;
+		Number frameelapsed = pCore->getElapsed();
+		elapsed = &frameelapsed;
+
+		if (p_Player->m_Active)
+		{
+			p_Player->Update(elapsed);
+			handlePlayerInput();
+		}
+		else
+		{
+			p_Player->UpdateGameOver();
+		}
+
+		p_Player->UpdateShots(elapsed);
+		p_Rocks->Update(elapsed);
+		p_UFOs->Update(elapsed);
 	}
-
-	if (!p_Player->m_Active)
-	{
-		p_Player->UpdateGameOver();
-	}
-
-	return pCore->updateAndRender();
-}
-
-bool Asteroids::FixedUpdate()
-{
-	Number *elapsed = 0;
-	Number frameelapsed = pCore->getElapsed();
-	elapsed = &frameelapsed;
-
-	if (p_Player->m_Active)
-		p_Player->Update(elapsed);
-
-	p_Player->UpdateShots(elapsed);
-	p_Rocks->Update(elapsed);
-	p_UFOs->FixedUpdate(elapsed);
 
 	if (m_Exit)
 	{

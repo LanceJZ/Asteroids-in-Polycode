@@ -4,17 +4,19 @@ HUD::HUD(void)
 {
 	m_GameOverLetters = new SceneMesh(Mesh::LINE_MESH);
 	m_HighScoreTitleLetters = new SceneMesh(Mesh::LINE_MESH);
+	m_CopyrightLetters = new SceneMesh(Mesh::LINE_MESH);
 	
 	m_GameOverLocation = Vector3(0, m_WindowHeight / 1.666, 0);
 	m_PlayerScoreLocation = Vector3(m_WindowWidth / 1.5, m_WindowHeight - 0.25f, 0);
 	m_HighScoreTitleLocation = Vector3(0, m_WindowHeight / 2.5, 0);
+	m_CopyrightLocation = Vector3(0, -m_WindowHeight / 1.05, 0);
 	m_SelectionLettersLocation = 0;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		m_GameInstructionLetters[i] = new SceneMesh(Mesh::LINE_MESH);
 
-		m_GameTextLocation[i] = Vector3(0, -m_WindowHeight / 1.5 + (i * -2.5), 0);
+		m_GameTextLocation[i] = Vector3(0, -m_WindowHeight / 1.8 + (i * -2.5), 0);
 	}
 
 	for (int i = 0; i < 2; i++)
@@ -35,13 +37,15 @@ HUD::HUD(void)
 	}
 
 	m_GameText[0] = "GAME OVER";
-	m_GameText[1] = "N KEY TO START OR RESTART GAME";
-	m_GameText[2] = "ARROW KEYS TO CONTROL SHIP UP FOR THRUST";
-	m_GameText[3] = "LEFT CTRL KEY OR SPACE TO FIRE";
-	m_GameText[4] = "RIGHT CTRL KEY FOR HYPERSPACE";
-	m_GameText[5] = "HIGH SCORE HEROES";
-	m_GameText[6] = "NEW HIGH SCORE";
-	m_GameText[7] = "ROTATE TO SELECT LETTER FIRE KEY TO SELECT";
+	m_GameText[1] = "N OR ENTER KEY TO START OR RESTART GAME";
+	m_GameText[2] = "P KEY TO PAUSE GAME";
+	m_GameText[3] = "ARROW KEYS TO CONTROL SHIP UP FOR THRUST";
+	m_GameText[4] = "LEFT CTRL KEY OR SPACE TO FIRE";
+	m_GameText[5] = "RIGHT CTRL KEY FOR HYPERSPACE";
+	m_GameText[6] = "HIGH SCORE HEROES";
+	m_GameText[7] = "NEW HIGH SCORE";
+	m_GameText[8] = "ROTATE TO SELECT LETTER FIRE KEY TO SELECT";
+	m_GameText[9] = "ASTEROIDS COPYRIGHT ATARI MCMLXXIX";
 
 	m_GameOver = true;
 	m_NewHighScore = false;
@@ -79,6 +83,8 @@ void HUD::Setup(std::shared_ptr<Scene> scene)
 void HUD::DisplayHighScores(int list, bool on)
 {
 	m_HighScoreTitleLetters->enabled = on;
+	m_GameOverLetters->enabled = on;
+	m_CopyrightLetters->enabled = on;
 
 	for (int i = 0; i < 5; i++)
 	{
@@ -89,6 +95,8 @@ void HUD::DisplayHighScores(int list, bool on)
 		m_HighScoreList[i + (list * 5)].Letters->enabled = on;
 		m_HighScoreList[i + (list * 5)].Numbers->enabled = on;
 		m_HighScoreList[i + (list * 5)].Spot->enabled = on;
+
+		m_GameInstructionLetters[i]->enabled = on;
 	}
 }
 
@@ -154,7 +162,7 @@ void HUD::NewGame(void)
 	m_GameOverLetters->enabled = false;
 	DisplayHighScores(0, false);
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		m_GameInstructionLetters[i]->enabled = false;
 	}
@@ -309,17 +317,18 @@ void HUD::MakeDefaultHighScores(void)
 void HUD::SetupTextMeshs(void)
 {
 	ProcessTextLine(m_GameOverLetters, m_GameText[0], m_GameOverLocation, 1);
-	ProcessTextLine(m_HighScoreTitleLetters, m_GameText[5], m_HighScoreTitleLocation, 0.5);
+	ProcessTextLine(m_HighScoreTitleLetters, m_GameText[6], m_HighScoreTitleLocation, 0.5);
+	ProcessTextLine(m_CopyrightLetters, m_GameText[9], m_CopyrightLocation, 0.25);
 	m_HighScoreTitleLetters->enabled = false;
 
-	for (int i = 1; i < 5; i++)
+	for (int i = 1; i < 6; i++)
 	{
 		ProcessTextLine(m_GameInstructionLetters[i - 1], m_GameText[i], m_GameTextLocation[i - 1], 0.5);
 	}
 
 	for (int i = 0; i < 2; i++)
 	{
-		ProcessTextLine(m_NewHighScoreLetters[i], m_GameText[i + 6], m_NewHighScoreTextLocation[i], 0.5);
+		ProcessTextLine(m_NewHighScoreLetters[i], m_GameText[i + 7], m_NewHighScoreTextLocation[i], 0.5);
 		m_NewHighScoreLetters[i]->enabled = false;
 	}
 }

@@ -28,9 +28,12 @@ void RockControl::Update(Number *elapsed)
 
 	RockCount rocksCounted = UpdateSmallRocks(elapsed, mRC.numberActive, mRC.playerAllClear);
 
-	if (rocksCounted.playerAllClear && !p_UFO->ShotActive())
+	if (p_Player->m_Hit && p_Player->m_Spawn)
 	{
-		p_Player->SetClear();
+		if (rocksCounted.playerAllClear && !p_UFO->ShotActive() && !p_UFO->PlayerNotClear())
+		{
+			p_Player->SetClear();
+		}
 	}
 
 	m_NumberOfRocksThisFrame = rocksCounted.numberActive;
@@ -72,6 +75,17 @@ void RockControl::Update(Number *elapsed)
 			p_BackgroundSound->Stop();
 			m_SoundOn = false;
 		}
+	}
+}
+
+void RockControl::Pause(bool paused)
+{
+	if (!p_Player->m_GameOver)
+	{
+		if (paused)
+			p_BackgroundSound->Stop();
+		else
+			p_BackgroundSound->Play();
 	}
 }
 

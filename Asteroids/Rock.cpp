@@ -37,14 +37,14 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 	p_UFO = ufo;
 
 	m_Points = 20;
-	m_RockSpeed = 6;
+	m_RockSpeed = 4.25;
 
 	m_Radius = 6.5f;
 
 
 	if (m_Size == 1)
 	{
-		m_RockSpeed = 10;
+		m_RockSpeed = 7.5;
 		m_RockMesh->Scale(Vector3(0.5, 0.5, 0.5));
 		m_Points = 50;
 		m_Radius = 4.5f;
@@ -52,7 +52,7 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 
 	if (m_Size == 2)
 	{
-		m_RockSpeed = 30;
+		m_RockSpeed = 13.5;
 		m_RockMesh->Scale(Vector3(0.25, 0.25, 0.25));
 		m_Points = 100;
 		m_Radius = 2.5f;
@@ -142,7 +142,7 @@ void Rock::Spawn(void)
 bool Rock::PlayerNotClear(void)
 {
 	if (m_Active)
-		return CirclesIntersect(Vector3(0, 0, 0), 12);
+		return CirclesIntersect(Vector3(0, 0, 0), 10);
 	else
 		return false;
 }

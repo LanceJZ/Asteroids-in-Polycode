@@ -62,8 +62,8 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 	{
 		m_ShipExplosionMesh[i]->cacheToVertexBuffer(true);
 		m_ShipExplosionMesh[i]->lineSmooth = true;
-		m_ShipExplosionMesh[i]->enabled = false;
 		p_Scene->addChild(m_ShipExplosionMesh[i]);
+		m_ShipExplosionMesh[i]->enabled = false;
 	}
 
 	m_ShipMesh->getMesh()->addVertex(-1.15, 0.8, 0.0); //Top back tip.
@@ -73,6 +73,7 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 	m_ShipMesh->getMesh()->addVertex(-0.95, 0.4, 0.0); //Top inside back.
 	m_ShipMesh->cacheToVertexBuffer(true);
 	m_ShipMesh->lineSmooth = true;
+	m_ShipMesh->setColor(0.8, 0.8, 1.0, 1.0);
 
 	m_ShipCloneMesh->getMesh()->addVertex(-1.15, 0.8, 0.0); //Top back tip.
 	m_ShipCloneMesh->getMesh()->addVertex(1.15, 0, 0.0); //Nose pointing to the left of screen.
@@ -103,6 +104,8 @@ void Player::Setup(std::shared_ptr<CollisionScene> scene)
 	p_HUD = std::unique_ptr<HUD>(new HUD());
 	p_HUD->Setup(scene);
 
+	p_Scene->addCollisionChild(m_ShipMesh, CollisionEntity::SHAPE_MESH);
+	m_ShipMesh->enabled = false;
 	ResetGameOverTimer();
 
 	//Sounds -----
@@ -124,7 +127,6 @@ float Player::ShotRadius(int shot)
 
 void Player::Activate(void)
 {
-	p_Scene->addCollisionChild(m_ShipMesh, CollisionEntity::SHAPE_MESH);
 	m_ShipMesh->enabled = true;
 	m_Active = true;
 	m_GameOver = false;
@@ -135,8 +137,6 @@ void Player::Activate(void)
 void Player::Deactivate(void)
 {
 	m_Active = false;
-	p_Scene->removeCollision(m_ShipMesh);
-	p_Scene->removeEntity(m_ShipMesh);
 	m_ShipMesh->enabled = false;
 }
 
@@ -159,13 +159,20 @@ void Player::Reset(void)
 	m_Position = Vector3(0, 0, 0);
 	m_Velocity = Vector3(0, 0, 0);
 	m_Acceleration = Vector3(0, 0, 0);
-	m_ShipMesh->setColor(0.8, 0.8, 1.0, 1.0);
 	m_ShipMesh->enabled = true;
 }
 
 void Player::DeactivateShot(int shot)
 {
 	p_Shots[shot]->Deactivate();
+}
+
+void Player::Pause(bool paused)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		p_Shots[i]->Pause(paused);
+	}
 }
 
 bool Player::ShotActive(int shot)
@@ -198,6 +205,8 @@ void Player::Update(Number *elapsed)
 
 		if (p_ExplodeTimer->getElapsedf() > m_ExplodeTimerAmount)
 		{
+			m_Spawn = true;
+
 			for (int i = 0; i < 6; i++)
 				m_ShipExplosionMesh[i]->enabled = false;
 
@@ -255,7 +264,7 @@ void Player::TurnLeft(void)
 {
 
 	if (!m_Hit)
-		m_Rotation.Velocity = -300;
+		m_Rotation.Velocity = -200;
 	else
 		m_Rotation.Velocity = 0;
 }
@@ -263,7 +272,7 @@ void Player::TurnLeft(void)
 void Player::TurnRight(void)
 {
 	if (!m_Hit)
-		m_Rotation.Velocity = 300;
+		m_Rotation.Velocity = 200;
 	else
 		m_Rotation.Velocity = 0;
 }
@@ -295,6 +304,7 @@ void Player::Hit(void)
 		p_ExplodeSound->Play();
 		p_HUD->LostLife();
 		m_Hit = true;
+		m_Spawn = false;
 		m_ClearToSpawn = false;
 		m_Velocity = m_Velocity * 0.1;
 		m_Acceleration = 0;
@@ -370,7 +380,7 @@ void Player::ApplyThrust(void)
 {
 	float rad = (m_Rotation.Amount) * Pi / 180.0;
 
-	float thrustAmount = 1.15;
+	float thrustAmount = 0.45;
 
 	m_Acceleration = Vector3(cos(rad) * thrustAmount, sin(rad) * thrustAmount, 0);
 
@@ -414,6 +424,8 @@ void Player::StartExplode(void)
 
 		p_ExpLoc[i]->m_Velocity = m_Velocity + vel;
 
+		m_ShipExplosionMesh[i]->setPosition(p_ExpLoc[i]->m_Position);
+		m_ShipExplosionMesh[i]->setRotationEuler(Vector3(0, 0, p_ExpLoc[i]->m_Rotation.Amount));
 		m_ShipExplosionMesh[i]->enabled = true;
 	}
 
@@ -465,7 +477,7 @@ void Player::FireShot(void)
 		{
 			if (!p_Shots[i]->m_Active)
 			{
-				float speed = 55;
+				float speed = 35;
 				float rad = (m_Rotation.Amount) * Pi / 180.0;
 				Vector3 direction = Vector3(cos(rad) * speed, sin(rad) * speed, 0);
 				Vector3 position = Vector3(cos(rad) * 1.15, sin(rad) * 1.15, 0);

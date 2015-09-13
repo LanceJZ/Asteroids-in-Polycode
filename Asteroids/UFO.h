@@ -10,12 +10,13 @@ public:
 	UFO(void);
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
-	void FixedUpdate(Number *elapsed);
 	void UpdateShot(Number *elapsed);
 	void Spawn(int size);
+	void Pause(bool paused);
 	void Deactivate(void);
 	void DeactivateShot(void);
 	bool ShotActive(void);
+	bool PlayerNotClear(void);
 	float Radius(void);
 	float ShotRadius(void);
 

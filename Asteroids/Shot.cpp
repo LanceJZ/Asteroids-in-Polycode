@@ -27,6 +27,7 @@ void Shot::Setup(std::shared_ptr<CollisionScene> scene)
 	m_ShotMesh->getMesh()->addVertex(size, size, 0);
 	m_ShotMesh->getMesh()->addVertex(-size, size, 0);
 	m_ShotMesh->cacheToVertexBuffer(true);
+	p_Scene->addCollisionChild(m_ShotMesh, CollisionEntity::SHAPE_MESH);
 	m_ShotMesh->setColor(1, 1, 1, 1);
 	m_ShotMesh->enabled = false;
 	m_Active = false;
@@ -42,17 +43,18 @@ void Shot::Fire(Vector3 position, Vector3 velocity, float timer)
 	m_Active = true;
 
 	m_ShotMesh->setPosition(m_Position);
-	p_Scene->addCollisionChild(m_ShotMesh, CollisionEntity::SHAPE_SPHERE);
 
 	Timer::Reset();
 	Timer::setTimerInterval(m_TimerAmount);
+}
+
+void Shot::Pause(bool paused)
+{
+	Timer::Pause(paused);
 }
 
 void Shot::Deactivate()
 {
 	m_ShotMesh->enabled = false;
 	m_Active = false;
-	p_Scene->removeCollision(m_ShotMesh);
-	p_Scene->removeEntity(m_ShotMesh);
-
 }

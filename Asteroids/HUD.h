@@ -67,12 +67,13 @@ private:
 	int m_HighScoreSelectionOn;
 
 	std::string m_HighScoreSelectedLetters;
-	std::string m_GameText[8];
+	std::string m_GameText[10];
 	std::string m_SaveFileName;
 
 	Vector3 m_HitsLocation;
 	Vector3 m_GameOverLocation;
-	Vector3 m_GameTextLocation[4];
+	Vector3 m_CopyrightLocation;
+	Vector3 m_GameTextLocation[5];
 	Vector3 m_PlayerScoreLocation;
 	Vector3 m_PlayerHighScoreLocation;
 	Vector3 m_HighScoreTitleLocation;
@@ -99,7 +100,8 @@ private:
 	SceneMesh *m_SelectionLetters;
 	SceneMesh *m_HighScoreTitleLetters;
 	SceneMesh *m_NewHighScoreLetters[2];
-	SceneMesh *m_GameInstructionLetters[4];
+	SceneMesh *m_GameInstructionLetters[5];
+	SceneMesh *m_CopyrightLetters;
 
 	void SaveHighScores(void);
 	void LoadHighScores(void);

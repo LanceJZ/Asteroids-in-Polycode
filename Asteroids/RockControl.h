@@ -17,6 +17,7 @@ public:
 
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player, std::shared_ptr<UFOControl> ufo);
 	void Update(Number *elapsed);
+	void Pause(bool paused);
 	void NewGame(void);
 
 private:

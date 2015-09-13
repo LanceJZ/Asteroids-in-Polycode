@@ -12,6 +12,7 @@ public:
 	void Setup(std::shared_ptr<CollisionScene> scene);
 	void Update(Number *elapsed);
 	void Fire(Vector3 position, Vector3 velocity, float timer);
+	void Pause(bool paused);
 	void Deactivate();
 
 private:

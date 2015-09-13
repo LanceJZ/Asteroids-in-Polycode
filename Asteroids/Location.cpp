@@ -50,13 +50,12 @@ void Location::Update(Number *elapsed)
 
 bool Location::CirclesIntersect(Polycode::Vector3 Target, float TargetRadius)
 {
-	float distance = sqrt((Target.x - m_Position.x) * (Target.x - m_Position.x) +
-		(Target.y - m_Position.y) * (Target.y - m_Position.y));
+	Number dx = Target.x - m_Position.x;
+	Number dy = Target.y - m_Position.y;
+	float rad = m_Radius + TargetRadius;
 
-	if (distance < m_Radius + TargetRadius)
-	{
+	if ((dx * dx) + (dy * dy) < rad * rad)
 		return true;
-	}
 
 	return false;
 }

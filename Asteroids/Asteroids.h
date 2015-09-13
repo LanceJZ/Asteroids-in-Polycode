@@ -13,12 +13,15 @@ public:
 	~Asteroids();
 
 	void handleEvent(Event *events);
+	void handlePlayerInput(void);
 	bool Update(void);
-	bool FixedUpdate(void);
 
 private:	
 	Core * pCore;
 	std::shared_ptr<CollisionScene> p_Scene;
 
 	bool m_Exit;
+	bool m_Paused;
+	bool m_FiredShot;
+	bool m_Hyper;
 };

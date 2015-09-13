@@ -1,6 +1,6 @@
 #include "UFO.h"
 
-UFO::UFO()
+UFO::UFO(void)
 {
 	p_FireTimer = std::unique_ptr<Timer>(new Timer(false, 2000));
 	p_VectorTimer = std::unique_ptr<Timer>(new Timer(false, 2500));
@@ -57,42 +57,13 @@ void UFO::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> p
 	p_EngineSmallSound->setVolume(0.075);
 	p_ExplodeSound->setVolume(0.1);
 	p_ExplodeSound->setPitch(0.75);
+
+	m_UFOMesh->addChild(shipLines);
+	m_Scene->addCollisionChild(m_UFOMesh, CollisionEntity::SHAPE_MESH);
+	m_UFOMesh->enabled = false;
 }
 
 void UFO::Update(Number * elapsed)
-{
-	if (p_FireTimer->getElapsedf() > m_FireTimerAmount)
-	{
-		if (!p_Shot->m_Active)
-		{
-			if (m_AimedShot && p_Player->m_Active)
-			{
-				float var = Random::Number(0, 10);
-
-				if (var < 7.5)
-				{
-					FireAimedShot();
-				}
-				else
-				{
-					FireRandomShot();
-				}
-			}
-			else
-			{
-				FireRandomShot();
-			}
-		}
-	}
-
-	if (p_VectorTimer->getElapsedf() > m_VectorTimerAmount)
-	{
-		ChangeVector();
-	}
-
-}
-
-void UFO::FixedUpdate(Number * elapsed)
 {
 	Location::Update(elapsed);
 
@@ -144,20 +115,53 @@ void UFO::FixedUpdate(Number * elapsed)
 			}
 		}
 	}
+
+	if (p_FireTimer->getElapsedf() > m_FireTimerAmount)
+	{
+		if (!p_Shot->m_Active)
+		{
+			if (m_AimedShot && p_Player->m_Active)
+			{
+				float var = Random::Number(0, 10);
+
+				if (var < 7.5)
+				{
+					FireAimedShot();
+				}
+				else
+				{
+					FireRandomShot();
+				}
+			}
+			else
+			{
+				FireRandomShot();
+			}
+		}
+	}
+
+	if (p_VectorTimer->getElapsedf() > m_VectorTimerAmount)
+	{
+		ChangeVector();
+	}
+
 }
 
 void UFO::UpdateShot(Number * elapsed)
 {
 	p_Shot->Update(elapsed);
 
-	if (p_Shot->CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
+	if (p_Player->m_Active && !p_Player->m_Hit)
 	{
-		CollisionResult *shotvsPlayer = &m_Scene->testCollision(p_Shot->m_ShotMesh, p_Player->m_ShipMesh);
-
-		if (shotvsPlayer->collided)
+		if (p_Shot->CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 		{
-			p_Player->Hit();
-			p_Shot->Deactivate();
+			CollisionResult *shotvsPlayer = &m_Scene->testCollision(p_Shot->m_ShotMesh, p_Player->m_ShipMesh);
+
+			if (shotvsPlayer->collided)
+			{
+				p_Player->Hit();
+				p_Shot->Deactivate();
+			}
 		}
 	}
 }
@@ -214,6 +218,31 @@ void UFO::Spawn(int size)
 	ChangeVector();
 }
 
+void UFO::Pause(bool paused)
+{
+	if (m_Active && !p_Player->m_GameOver)
+	{
+		if (paused)
+		{
+			if (m_Size == 0)
+				p_EngineLargeSound->Stop();
+
+			if (m_Size == 1)
+				p_EngineSmallSound->Stop();
+		}
+		else
+		{
+			if (m_Size == 0)
+				p_EngineLargeSound->Play();
+
+			if (m_Size == 1)
+				p_EngineSmallSound->Play();
+		}
+	}
+
+	p_Shot->Pause(paused);
+}
+
 float UFO::ShotRadius(void)
 {
 	return p_Shot->m_Radius;
@@ -222,6 +251,14 @@ float UFO::ShotRadius(void)
 bool UFO::ShotActive(void)
 {
 	return p_Shot->m_Active;
+}
+
+bool UFO::PlayerNotClear(void)
+{
+	if (m_Active)
+		return CirclesIntersect(Vector3(0, 0, 0), 12);
+	else
+		return false;
 }
 
 void UFO::DeactivateShot(void)
@@ -241,8 +278,6 @@ float UFO::Radius(void)
 
 void UFO::Enable(void)
 {
-	m_Scene->addCollisionChild(m_UFOMesh, CollisionEntity::SHAPE_MESH);
-	m_UFOMesh->addChild(shipLines);
 	m_UFOMesh->setPosition(m_Position);
 	m_UFOMesh->enabled = true;
 	m_Active = true;
@@ -282,7 +317,7 @@ void UFO::ChangeVector(void)
 
 void UFO::FireShot(float directionInRadians)
 {
-	float speed = 47;
+	float speed = 27;
 
 	p_Shot->Fire(Vector3(cos(directionInRadians) * 1.9, sin(directionInRadians) * 1.9, 0) + m_Position,
 		Vector3(cos(directionInRadians) * speed, sin(directionInRadians) * speed, 0) + (m_Velocity * 0.25), 1300);
@@ -309,8 +344,6 @@ void UFO::FireRandomShot(void)
 void UFO::Deactivate(void)
 {
 	m_UFOMesh->enabled = false;
-	m_Scene->removeCollision(m_UFOMesh);
-	m_Scene->removeEntity(m_UFOMesh);
 	m_Active = false;
 	m_Hit = false;
 	m_Done = false;
