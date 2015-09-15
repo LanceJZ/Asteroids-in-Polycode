@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include\freetype2;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\PolycodeView;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include\AL;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\Dependencies\include\bullet</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include\freetype2;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\PolycodeView;$(SolutionDir)..\Polycode\Release\Windows\Framework\Core\Dependencies\include\AL;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\include;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\Dependencies\include\bullet;$(SolutionDir)..\Polycode\Release\Windows\Framework\Modules\Dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

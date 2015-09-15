@@ -2,10 +2,10 @@
 #include "UFO.h"
 #include "Explosion.h"
 
-class UFOControl : public Polycode::Timer
+class UFOControl : public Timer
 {
 public:
-	UFOControl();
+	UFOControl(void);
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
 	void WaveNumber(int Wave);
@@ -29,12 +29,12 @@ private:
 	std::unique_ptr<UFO> p_UFO;
 	std::vector<std::unique_ptr<Explosion>> p_Explosions;
 
-	int wave;
-	int spawnCounter;
-	float timer;
-	float timerAmount;
+	int m_Wave;
+	int m_SpawnCounter;
+	float m_SpawnTimerAmount;
+	float m_SpawnTimer;
 
-	void SpawnUFO();
+	void SpawnUFO(void);
 	void SpawnExplosion(Vector3 position, float size);
-	void ResetTimer();
+	void ResetTimer(void);
 };

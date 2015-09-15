@@ -168,6 +168,7 @@ void UFO::UpdateShot(Number * elapsed)
 
 void UFO::Spawn(int size)
 {
+	m_Size = size;
 	m_Hit = false;
 	float var = Random::Number(0, 10);
 
@@ -186,7 +187,7 @@ void UFO::Spawn(int size)
 
 	Enable();
 
-	if (size == 0)
+	if (m_Size == 0)
 	{
 		m_AimedShot = false;
 		m_Points = 200;
@@ -200,7 +201,7 @@ void UFO::Spawn(int size)
 				p_EngineLargeSound->Play(true);
 		}
 	}
-	else if (size == 1)
+	else if (m_Size == 1)
 	{
 		m_AimedShot = true;
 		m_Points = 1000;
@@ -233,11 +234,14 @@ void UFO::Pause(bool paused)
 		else
 		{
 			if (m_Size == 0)
-				p_EngineLargeSound->Play();
+				p_EngineLargeSound->Play(true);
 
 			if (m_Size == 1)
-				p_EngineSmallSound->Play();
+				p_EngineSmallSound->Play(true);
 		}
+
+		p_FireTimer->Pause(paused);
+		p_VectorTimer->Pause(paused);
 	}
 
 	p_Shot->Pause(paused);
@@ -338,7 +342,7 @@ void UFO::FireAimedShot(void)
 
 void UFO::FireRandomShot(void)
 {
-	FireShot(Random::Number(0, (float)Pi * 2));
+	FireShot(Random::Number(0, PI * 2));
 }
 
 void UFO::Deactivate(void)

@@ -3,25 +3,26 @@ std::shared_ptr<Player> p_Player(new Player);
 std::shared_ptr<RockControl> p_Rocks(new RockControl);
 std::shared_ptr<UFOControl> p_UFOs(new UFOControl);
 
-Asteroids::Asteroids(PolycodeView *view, Core *core) : EventHandler()
+Asteroids::Asteroids(PolycodeView *view) : EventHandler()
 {
 	Random::Setup();
+	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
+	pCore = new POLYCODE_CORE(view, 800, 720, false, true, 0, 0, 240, 0, true);
 
-	pCore = core;
 	m_Exit = false;
 	m_Paused = false;
 	m_FiredShot = false;
 	m_Hyper = false;
 	//  Core::resizeTo 	(int xRes, int yRes);	
 	p_Scene = std::shared_ptr<CollisionScene>(new CollisionScene());
-	p_Scene->clearColor = Color(0.05, 0.025, 0.1, 1.0);
+	p_Scene->clearColor = Color(0.05, 0.02, 0.075, 1.0);
 	p_Scene->useClearColor = true;
 
 	p_Scene->getDefaultCamera()->setPosition(0, 0, -80);
 	p_Scene->getDefaultCamera()->lookAt(Vector3(0, 0, 0));
 
-	core->getInput()->addEventListener(this, InputEvent::EVENT_KEYDOWN);
-	core->getInput()->addEventListener(this, InputEvent::EVENT_KEYUP);
+	pCore->getInput()->addEventListener(this, InputEvent::EVENT_KEYDOWN);
+	pCore->getInput()->addEventListener(this, InputEvent::EVENT_KEYUP);
 
 	p_Player->Setup(p_Scene);
 	p_UFOs->Setup(p_Scene, p_Player);
@@ -151,6 +152,8 @@ bool Asteroids::Update()
 {
 	if (!m_Paused)
 	{
+		pCore->doSleep();
+
 		Number *elapsed = 0;
 		Number frameelapsed = pCore->getElapsed();
 		elapsed = &frameelapsed;

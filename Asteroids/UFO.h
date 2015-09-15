@@ -8,6 +8,7 @@ class UFO :	public Location
 {
 public:
 	UFO(void);
+	
 	void Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player);
 	void Update(Number *elapsed);
 	void UpdateShot(Number *elapsed);

@@ -6,16 +6,22 @@
 #define IDI_MYICON 201
 
 using namespace Polycode;
+
+#if defined(_DEBUG)
+Asteroids * pAsteroids;
+#else
 std::unique_ptr<Asteroids> pAsteroids;
-Core *pCore;
+#endif
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Beta 1.45");
-	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
-	pCore = new POLYCODE_CORE(view, 800, 720, false, true, 0, 0, 240, 0, true);
+	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Asteroids Beta 1.451");
 
-	pAsteroids = std::unique_ptr<Asteroids>( new Asteroids(view, pCore));
+#if defined(_DEBUG)
+	pAsteroids = new Asteroids(view);
+#else
+	pAsteroids = std::unique_ptr<Asteroids>( new Asteroids(view) );
+#endif
 	
 	HICON hMyIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYICON));
 	SendMessage(view->hwnd, WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)hMyIcon);
@@ -29,8 +35,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}
-
-		pCore->doSleep();
 	} 
 	while (pAsteroids->Update());
 

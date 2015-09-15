@@ -1,13 +1,16 @@
 Asteroids in Polycode Alpha
 ===========================
 
+Version Beta 1.451
+=================
+Small bug fix update. Found a few more small bugs in the UFO code, the UFO audio was not pausing when game was paused. UFO timers for fireing, changing course or spawning were not being paused either. Cleaned up more code. Now this version is up for RC.
+
 Version Beta 1.45
 =================
 I found a few more bug in my code. More optimizations. Performance on my desktop is back to 1.5% average CPU usage at 240FPS.
 I added a pause feature to the game, now you can pause the game play. I added instruction text to the Game Over screen for the pause. I fixed an error (I forgot to have it display the text.) to not display the Game Over text after a game is played and it went into Game Over again.
 I added copyright text to the Game Over screen.
 I will add an XP compiled version on request. I don't have one because I don't think I should be supporting an OS that is almost fifteen years old, and not a supported OS at that.
-I think this could be the release candidate. I'm pretty happy with it, and I think I got all the bugs now this time.
 
 Version Beta 1.40
 =================

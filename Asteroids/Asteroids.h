@@ -9,7 +9,7 @@
 class Asteroids : public EventHandler
 {
 public:
-	Asteroids(PolycodeView *view, Core *core);
+	Asteroids(PolycodeView *view);
 	~Asteroids();
 
 	void handleEvent(Event *events);

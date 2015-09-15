@@ -2,9 +2,10 @@
 
 UFOControl::UFOControl() : Timer(false, 10000)
 {
-	timerAmount = 10015;
-	spawnCounter = 0;
+	m_SpawnTimerAmount = 10015;
+	m_SpawnCounter = 0;
 	ResetTimer();
+	p_UFO = std::unique_ptr<UFO>(new UFO());
 }
 
 void UFOControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
@@ -14,7 +15,6 @@ void UFOControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Pl
 
 	ResetTimer();
 
-	p_UFO = std::unique_ptr<UFO>(new UFO());
 	p_UFO->Setup(scene, player);
 }
 
@@ -42,11 +42,11 @@ void UFOControl::Update(Number * elapsed)
 	}
 	else
 	{
-		if (Timer::elapsed > timer && !p_UFO->m_Active)
+		if (Timer::elapsed > m_SpawnTimer && !p_UFO->m_Active)
 		{
 			SpawnUFO();
 			ResetTimer();
-			spawnCounter++;
+			m_SpawnCounter++;
 		}
 	}
 
@@ -61,12 +61,13 @@ void UFOControl::Update(Number * elapsed)
 
 void UFOControl::WaveNumber(int Wave)
 {
-	wave = Wave;
+	m_Wave = Wave;
 }
 
 void UFOControl::Pause(bool paused)
 {
 	p_UFO->Pause(paused);
+	Timer::Pause(paused);
 }
 
 void UFOControl::HitRock(void)
@@ -120,8 +121,8 @@ void UFOControl::NewGame(void)
 	ResetTimer();
 	Deactivate();
 	DeactivateShot();
-	spawnCounter = 0;
-	wave = 0;
+	m_SpawnCounter = 0;
+	m_Wave = 0;
 }
 
 SceneMesh * UFOControl::ShotMesh(void)
@@ -136,7 +137,7 @@ bool UFOControl::ShotActive(void)
 
 void UFOControl::SpawnUFO()
 {
-	float spawnPercent = (float)(pow(0.915, (spawnCounter * 2) / ((wave * 2) + 1)));
+	float spawnPercent = (float)(pow(0.915, (m_SpawnCounter * 2) / ((m_Wave * 2) + 1)));
 	int size;
 
 	// Size 0 is the large one.
@@ -172,9 +173,10 @@ void UFOControl::SpawnExplosion(Vector3 position, float size)
 
 void UFOControl::ResetTimer()
 {
-	timer = Random::Number(Random::Clip((timerAmount - (wave * 0.25)), timerAmount * 0.5, timerAmount * 1.15), Random::Clip((timerAmount - (wave * 0.25)),
-		timerAmount * 1.15, timerAmount * 2.15));
+	m_SpawnTimer = Random::Number(Random::Clip((m_SpawnTimerAmount - (m_Wave * 0.25)), m_SpawnTimerAmount * 0.5, m_SpawnTimerAmount * 1.15),
+		Random::Clip((m_SpawnTimerAmount - (m_Wave * 0.25)),
+		m_SpawnTimerAmount * 1.15, m_SpawnTimerAmount * 2.15));
 
 	Timer::Reset();
-	Timer::setTimerInterval(timer);
+	Timer::setTimerInterval(m_SpawnTimer);
 }
