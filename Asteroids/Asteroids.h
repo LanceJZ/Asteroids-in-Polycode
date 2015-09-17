@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "RockControl.h"
 #include "UFOControl.h"
+#include "EnemyController.h"
 
 class Asteroids : public EventHandler
 {

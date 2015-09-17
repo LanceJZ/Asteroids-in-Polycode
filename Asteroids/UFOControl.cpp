@@ -11,7 +11,6 @@ UFOControl::UFOControl() : Timer(false, 10000)
 void UFOControl::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
 {
 	p_Scene = scene;
-	p_Player = player;
 
 	ResetTimer();
 
@@ -103,7 +102,7 @@ bool UFOControl::PlayerNotClear(void)
 
 SceneMesh * UFOControl::ShipBody(void)
 {
-	return p_UFO->m_UFOMesh;
+	return p_UFO->m_ShipMesh;
 }
 
 void UFOControl::Deactivate(void)

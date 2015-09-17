@@ -13,35 +13,35 @@ UFO::UFO(void)
 
 void UFO::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> player)
 {
-	m_Scene = scene;
+	p_Scene = scene;
 	p_Player = player;
 	
 	//The left of screen, positive X is the direction for rotation zero.
 	//The top of the screen, positive Y is the direction for rotation zero.
 
-	m_UFOMesh = new SceneMesh(Mesh::LINE_LOOP_MESH);
+	m_ShipMesh = new SceneMesh(Mesh::LINE_LOOP_MESH);
 
-	m_UFOMesh->getMesh()->addVertex(1.9, -0.4, 0.0); // Far left edge Bottom line
-	m_UFOMesh->getMesh()->addVertex(0.7, 0.4, 0.0); // Top line left edge
-	m_UFOMesh->getMesh()->addVertex(0.3, 1.1, 0.0);
-	m_UFOMesh->getMesh()->addVertex(-0.3, 1.1, 0.0);
-	m_UFOMesh->getMesh()->addVertex(-0.7, 0.4, 0.0); // Top line right edge
-	m_UFOMesh->getMesh()->addVertex(-1.9, -0.4, 0.0); // Right edge bottom line
-	m_UFOMesh->getMesh()->addVertex(-0.8, -1.1, 0.0);
-	m_UFOMesh->getMesh()->addVertex(0.8, -1.1, 0.0);
-	m_UFOMesh->cacheToVertexBuffer(true);
-	m_UFOMesh->setColor(0.7, 0.7, 0.9, 0.9);
-	m_UFOMesh->lineSmooth = true;
+	m_ShipMesh->getMesh()->addVertex(1.9, -0.4, 0.0); // Left edge Bottom line
+	m_ShipMesh->getMesh()->addVertex(0.7, 0.4, 0.0); // Top line left edge
+	m_ShipMesh->getMesh()->addVertex(0.3, 1.1, 0.0);
+	m_ShipMesh->getMesh()->addVertex(-0.3, 1.1, 0.0);
+	m_ShipMesh->getMesh()->addVertex(-0.7, 0.4, 0.0); // Top line right edge
+	m_ShipMesh->getMesh()->addVertex(-1.9, -0.4, 0.0); // Right edge bottom line
+	m_ShipMesh->getMesh()->addVertex(-0.8, -1.1, 0.0);
+	m_ShipMesh->getMesh()->addVertex(0.8, -1.1, 0.0);
+	m_ShipMesh->cacheToVertexBuffer(true);
+	m_ShipMesh->setColor(0.7, 0.7, 0.9, 0.9);
+	m_ShipMesh->lineSmooth = true;
 
-	shipLines = new SceneMesh(Mesh::LINE_MESH);
+	SceneMesh *m_ShipInsideMesh = new SceneMesh(Mesh::LINE_MESH);
 
-	shipLines->getMesh()->addVertex(0.7, 0.4, 0.0); // Top line
-	shipLines->getMesh()->addVertex(-0.7, 0.4, 0.0);
-	shipLines->getMesh()->addVertex(1.9, -0.4, 0.0); // Bottom line
-	shipLines->getMesh()->addVertex(-1.9, -0.4, 0.0);
-	shipLines->cacheToVertexBuffer(true);
-	shipLines->setColor(0.7, 0.7, 0.9, 0.9);
-	shipLines->lineSmooth = true;
+	m_ShipInsideMesh->getMesh()->addVertex(0.7, 0.4, 0.0); // Top inside line
+	m_ShipInsideMesh->getMesh()->addVertex(-0.7, 0.4, 0.0);
+	m_ShipInsideMesh->getMesh()->addVertex(1.9, -0.4, 0.0); // Bottom inside line
+	m_ShipInsideMesh->getMesh()->addVertex(-1.9, -0.4, 0.0);
+	m_ShipInsideMesh->cacheToVertexBuffer(true);
+	m_ShipInsideMesh->setColor(0.7, 0.7, 0.9, 0.9);
+	m_ShipInsideMesh->lineSmooth = true;
 
 	p_Shot->Setup(scene);
 
@@ -58,16 +58,16 @@ void UFO::Setup(std::shared_ptr<CollisionScene> scene, std::shared_ptr<Player> p
 	p_ExplodeSound->setVolume(0.1);
 	p_ExplodeSound->setPitch(0.75);
 
-	m_UFOMesh->addChild(shipLines);
-	m_Scene->addCollisionChild(m_UFOMesh, CollisionEntity::SHAPE_MESH);
-	m_UFOMesh->enabled = false;
+	m_ShipMesh->addChild(m_ShipInsideMesh);
+	p_Scene->addCollisionChild(m_ShipMesh, CollisionEntity::SHAPE_MESH);
+	m_ShipMesh->enabled = false;
 }
 
 void UFO::Update(Number * elapsed)
 {
 	Location::Update(elapsed);
 
-	m_UFOMesh->setPosition(m_Position);
+	m_ShipMesh->setPosition(m_Position);
 
 	if (m_Position.x > m_WindowWidth || m_Position.x < -m_WindowWidth)
 	{
@@ -80,16 +80,34 @@ void UFO::Update(Number * elapsed)
 	{
 		if (CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 		{
-			CollisionResult *vsPlayer = &m_Scene->testCollision(m_UFOMesh, p_Player->m_ShipMesh);
-
-			if (vsPlayer->collided)
+			if (p_Player->m_ShieldOn)
 			{
-				if (p_ExplodeSound != NULL)
-					p_ExplodeSound->Play();
+				CollisionResult *vsShield = &p_Scene->testCollision(m_ShipMesh, p_Player->m_ShieldMesh);
 
-				p_Player->Hit();
-				p_Player->GotPoints(m_Points);
-				m_Hit = true;
+				if (vsShield->collided)
+				{
+					if (!m_ShieldHit)
+					{
+						p_Player->ShieldHit(m_Velocity * 3, false);
+						m_ShieldHit = true;
+					}
+				}
+				else
+					m_ShieldHit = false;
+			}
+			else
+			{
+				CollisionResult *vsPlayer = &p_Scene->testCollision(m_ShipMesh, p_Player->m_ShipMesh);
+
+				if (vsPlayer->collided)
+				{
+					if (p_ExplodeSound != NULL)
+						p_ExplodeSound->Play();
+
+					p_Player->Hit();
+					p_Player->GotPoints(m_Points);
+					m_Hit = true;
+				}
 			}
 		}
 	}
@@ -100,7 +118,7 @@ void UFO::Update(Number * elapsed)
 		{
 			if (CirclesIntersect(p_Player->ShotPosition(i), p_Player->ShotRadius(i)))
 			{
-				CollisionResult *rockVsPlayerShot = &m_Scene->testCollision(m_UFOMesh, p_Player->ShotMesh(i));
+				CollisionResult *rockVsPlayerShot = &p_Scene->testCollision(m_ShipMesh, p_Player->ShotMesh(i));
 
 				if (rockVsPlayerShot->collided)
 				{
@@ -155,12 +173,30 @@ void UFO::UpdateShot(Number * elapsed)
 	{
 		if (p_Shot->CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 		{
-			CollisionResult *shotvsPlayer = &m_Scene->testCollision(p_Shot->m_ShotMesh, p_Player->m_ShipMesh);
-
-			if (shotvsPlayer->collided)
+			if (p_Player->m_ShieldOn)
 			{
-				p_Player->Hit();
-				p_Shot->Deactivate();
+				CollisionResult *shotvsShield = &p_Scene->testCollision(p_Shot->m_ShotMesh, p_Player->m_ShieldMesh);
+
+				if (shotvsShield)
+				{
+					if (!m_ShotHitShield)
+					{
+						p_Player->ShieldHit(0, true);
+						p_Shot->Deactivate();
+					}
+				}
+				else
+					m_ShotHitShield = false;
+			}
+			else
+			{
+				CollisionResult *shotvsPlayer = &p_Scene->testCollision(p_Shot->m_ShotMesh, p_Player->m_ShipMesh);
+
+				if (shotvsPlayer->collided)
+				{
+					p_Player->Hit();
+					p_Shot->Deactivate();
+				}
 			}
 		}
 	}
@@ -191,7 +227,7 @@ void UFO::Spawn(int size)
 	{
 		m_AimedShot = false;
 		m_Points = 200;
-		m_UFOMesh->setScale(Vector3(1, 1, 1));
+		m_ShipMesh->setScale(Vector3(1, 1, 1));
 
 		m_Radius = 5.5f;
 
@@ -205,7 +241,7 @@ void UFO::Spawn(int size)
 	{
 		m_AimedShot = true;
 		m_Points = 1000;
-		m_UFOMesh->setScale(Vector3(0.5, 0.5, 0.5));
+		m_ShipMesh->setScale(Vector3(0.5, 0.5, 0.5));
 
 		m_Radius = 3.5f;
 
@@ -226,18 +262,22 @@ void UFO::Pause(bool paused)
 		if (paused)
 		{
 			if (m_Size == 0)
-				p_EngineLargeSound->Stop();
+				if (p_EngineLargeSound != NULL)
+					p_EngineLargeSound->Stop();
 
 			if (m_Size == 1)
-				p_EngineSmallSound->Stop();
+				if (p_EngineSmallSound != NULL)
+					p_EngineSmallSound->Stop();
 		}
 		else
 		{
 			if (m_Size == 0)
-				p_EngineLargeSound->Play(true);
+				if (p_EngineLargeSound != NULL)
+					p_EngineLargeSound->Play(true);
 
 			if (m_Size == 1)
-				p_EngineSmallSound->Play(true);
+				if (p_EngineSmallSound != NULL)
+					p_EngineSmallSound->Play(true);
 		}
 
 		p_FireTimer->Pause(paused);
@@ -260,7 +300,7 @@ bool UFO::ShotActive(void)
 bool UFO::PlayerNotClear(void)
 {
 	if (m_Active)
-		return CirclesIntersect(Vector3(0, 0, 0), 12);
+		return CirclesIntersect(Vector3(0, 0, 0), 10);
 	else
 		return false;
 }
@@ -275,16 +315,13 @@ SceneMesh * UFO::ShotMesh(void)
 	return p_Shot->m_ShotMesh;
 }
 
-float UFO::Radius(void)
-{
-	return m_Radius;
-}
-
 void UFO::Enable(void)
 {
-	m_UFOMesh->setPosition(m_Position);
-	m_UFOMesh->enabled = true;
+	m_ShipMesh->setPosition(m_Position);
+	m_ShipMesh->enabled = true;
 	m_Active = true;
+	m_ShieldHit = false;
+	m_ShotHitShield = false;
 	ResetFireTimer();
 }
 
@@ -347,7 +384,7 @@ void UFO::FireRandomShot(void)
 
 void UFO::Deactivate(void)
 {
-	m_UFOMesh->enabled = false;
+	m_ShipMesh->enabled = false;
 	m_Active = false;
 	m_Hit = false;
 	m_Done = false;

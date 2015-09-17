@@ -1,8 +1,13 @@
-Asteroids in Polycode Alpha
-===========================
+Asteroids in Polycode
+=====================
+
+Version Beta 1.452
+==================
+Code optimizations, code cleanup.
+While I convert this project to Asteroids Deluxe, I spoted a few things that I was able to improve on. Now this version is up for RC.
 
 Version Beta 1.451
-=================
+==================
 Small bug fix update. Found a few more small bugs in the UFO code, the UFO audio was not pausing when game was paused. UFO timers for fireing, changing course or spawning were not being paused either. Cleaned up more code. Now this version is up for RC.
 
 Version Beta 1.45

@@ -28,8 +28,8 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 		RockOne();
 
 	m_RockMesh->cacheToVertexBuffer(true);
-	m_RockMesh->setColor(0.6, 0.6, 0.8, 0.8);
 	m_RockMesh->lineSmooth = true;
+	m_RockMesh->setColor(0.7, 0.7, 0.9, 0.85);
 
 	m_Size = size;
 	p_Scene = scene;
@@ -37,14 +37,22 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 	p_UFO = ufo;
 
 	m_Points = 20;
-	m_RockSpeed = 4.25;
-
+	m_RockSpeed = 8.25;
 	m_Radius = 6.5f;
-
+	
+	if (Random::Number(0, 2) > 1)
+		m_Rotation.Velocity = Random::Number(10, 25);
+	else
+		m_Rotation.Velocity = -Random::Number(10, 25);
 
 	if (m_Size == 1)
 	{
-		m_RockSpeed = 7.5;
+		if (Random::Number(0, 2) > 1)
+			m_Rotation.Velocity = Random::Number(20, 40);
+		else
+			m_Rotation.Velocity = -Random::Number(20, 40);
+
+		m_RockSpeed = 9.5;
 		m_RockMesh->Scale(Vector3(0.5, 0.5, 0.5));
 		m_Points = 50;
 		m_Radius = 4.5f;
@@ -52,7 +60,12 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 
 	if (m_Size == 2)
 	{
-		m_RockSpeed = 13.5;
+		if (Random::Number(0, 2) > 1)
+			m_Rotation.Velocity = Random::Number(30, 55);
+		else
+			m_Rotation.Velocity = -Random::Number(30, 55);
+
+		m_RockSpeed = 15.5;
 		m_RockMesh->Scale(Vector3(0.25, 0.25, 0.25));
 		m_Points = 100;
 		m_Radius = 2.5f;
@@ -62,68 +75,6 @@ void Rock::Setup(std::shared_ptr<CollisionScene> scene, int size, std::shared_pt
 	p_ExplodeSound = std::unique_ptr<Sound>(new Sound("audio/RockExplosion.wav"));
 	p_ExplodeSound->setVolume(0.05);
 	p_ExplodeSound->setPitch(0.75);
-}
-
-void Rock::RockOne(void)
-{
-	m_RockMesh->getMesh()->addVertex(2.9, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.5, 3.0, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.0, 2.2, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.5, 3.0, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.5, 0.7, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, -0.7, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.5, -3.0, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.7, -2.1, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.5, -3.0, 0.0);
-	m_RockMesh->getMesh()->addVertex(2.9, -1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(2.1, 0.0, 0.0);
-}
-
-void Rock::RockTwo(void)
-{
-	m_RockMesh->getMesh()->addVertex(2.9, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.4, 2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.0, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.5, 2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.2, 0.0, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, -1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(-0.7, -2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.4, -2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(2.9, -1.4, 0.0);
-}
-
-void Rock::RockThree(void)
-{
-	m_RockMesh->getMesh()->addVertex(2.9, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.7, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.6, 2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(-0.8, 2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, 1.5, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, 0.8, 0.0);
-	m_RockMesh->getMesh()->addVertex(-0.8, 0.0, 0.0);
-	m_RockMesh->getMesh()->addVertex(-2.9, -1.4, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.4, -2.8, 0.0);
-	m_RockMesh->getMesh()->addVertex(-0.7, -2.1, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.5, -2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(2.9, -0.8, 0.0);
-}
-
-void Rock::RockFour(void)
-{
-	m_RockMesh->getMesh()->addVertex(2.9, 0.8, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.6, 2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.5, 2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(-3.0, 0.7, 0.0);
-	m_RockMesh->getMesh()->addVertex(-3.0, -0.7, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.6, -2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(-1.4, -2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.0, -2.9, 0.0);
-	m_RockMesh->getMesh()->addVertex(0.0, -0.8, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.4, -2.8, 0.0);
-	m_RockMesh->getMesh()->addVertex(2.9, -0.7, 0.0);
-	m_RockMesh->getMesh()->addVertex(1.5, -0.0, 0.0);
 }
 
 void Rock::Spawn(Vector3 position)
@@ -142,7 +93,7 @@ void Rock::Spawn(void)
 bool Rock::PlayerNotClear(void)
 {
 	if (m_Active)
-		return CirclesIntersect(Vector3(0, 0, 0), 10);
+		return CirclesIntersect(Vector3(0, 0, 0), 8);
 	else
 		return false;
 }
@@ -154,19 +105,38 @@ void Rock::Update(Number *elapsed)
 	if (!m_Hit)
 	{
 		m_RockMesh->setPosition(m_Position);
+		m_RockMesh->setRotationEuler(Vector3(0, 0, m_Rotation.Amount));
 		CheckForEdge();
 
 		if (p_Player->m_Active && !p_Player->m_Hit)
 		{
 			if (CirclesIntersect(p_Player->Position(), p_Player->m_Radius))
 			{
-				CollisionResult *rockvsPlayer = &p_Scene->testCollision(m_RockMesh, p_Player->m_ShipMesh);
-
-				if (rockvsPlayer->collided)
+				if (p_Player->m_ShieldOn)
 				{
-					p_Player->Hit();
-					p_Player->GotPoints(m_Points);
-					m_Hit = true;
+					CollisionResult *rockvsShield = &p_Scene->testCollision(m_RockMesh, p_Player->m_ShieldMesh);
+
+					if (rockvsShield->collided)
+					{
+						if (!m_ShieldHit)
+						{
+							p_Player->ShieldHit(m_Velocity, false);
+							m_ShieldHit = true;
+						}
+					}
+					else
+						m_ShieldHit = false;
+				}
+				else
+				{
+					CollisionResult *rockvsPlayer = &p_Scene->testCollision(m_RockMesh, p_Player->m_ShipMesh);
+
+					if (rockvsPlayer->collided)
+					{
+						p_Player->Hit();
+						p_Player->GotPoints(m_Points);
+						m_Hit = true;
+					}
 				}
 			}
 		}
@@ -231,11 +201,12 @@ void Rock::Enable(void)
 {
 	m_Active = true;
 	m_Hit = false;
+	m_ShieldHit = false;
 	m_RockMesh->setPosition(m_Position);
 	m_RockMesh->enabled = true;
 	p_Scene->addCollisionChild(m_RockMesh, CollisionEntity::SHAPE_MESH);
 
-	float rad = Random::Number(0, (float)Pi * 2);
+	float rad = Random::Number(0, PI * 2);
 	float amt = Random::Number(m_RockSpeed * 0.1, m_RockSpeed);
 
 	m_Velocity = Vector3(cos(rad) * amt, sin(rad) * amt, 0);
@@ -247,4 +218,66 @@ void Rock::Deactivate(void)
 	p_Scene->removeCollision(m_RockMesh);
 	p_Scene->removeEntity(m_RockMesh);
 	m_RockMesh->enabled = false;
+}
+
+void Rock::RockOne(void)
+{
+	m_RockMesh->getMesh()->addVertex(2.9, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.5, 3.0, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.0, 2.2, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.5, 3.0, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.5, 0.7, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, -0.7, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.5, -3.0, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.7, -2.1, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.5, -3.0, 0.0);
+	m_RockMesh->getMesh()->addVertex(2.9, -1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(2.1, 0.0, 0.0);
+}
+
+void Rock::RockTwo(void)
+{
+	m_RockMesh->getMesh()->addVertex(2.9, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.4, 2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.0, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.5, 2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.2, 0.0, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, -1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(-0.7, -2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.4, -2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(2.9, -1.4, 0.0);
+}
+
+void Rock::RockThree(void)
+{
+	m_RockMesh->getMesh()->addVertex(2.9, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.7, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.6, 2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(-0.8, 2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, 1.5, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, 0.8, 0.0);
+	m_RockMesh->getMesh()->addVertex(-0.8, 0.0, 0.0);
+	m_RockMesh->getMesh()->addVertex(-2.9, -1.4, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.4, -2.8, 0.0);
+	m_RockMesh->getMesh()->addVertex(-0.7, -2.1, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.5, -2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(2.9, -0.8, 0.0);
+}
+
+void Rock::RockFour(void)
+{
+	m_RockMesh->getMesh()->addVertex(2.9, 0.8, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.6, 2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.5, 2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(-3.0, 0.7, 0.0);
+	m_RockMesh->getMesh()->addVertex(-3.0, -0.7, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.6, -2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(-1.4, -2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.0, -2.9, 0.0);
+	m_RockMesh->getMesh()->addVertex(0.0, -0.8, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.4, -2.8, 0.0);
+	m_RockMesh->getMesh()->addVertex(2.9, -0.7, 0.0);
+	m_RockMesh->getMesh()->addVertex(1.5, -0.0, 0.0);
 }

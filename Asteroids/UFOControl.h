@@ -25,7 +25,6 @@ public:
 
 private:
 	std::shared_ptr<CollisionScene> p_Scene;
-	std::shared_ptr<Player> p_Player;
 	std::unique_ptr<UFO> p_UFO;
 	std::vector<std::unique_ptr<Explosion>> p_Explosions;
 

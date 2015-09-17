@@ -2,20 +2,21 @@
 std::shared_ptr<Player> p_Player(new Player);
 std::shared_ptr<RockControl> p_Rocks(new RockControl);
 std::shared_ptr<UFOControl> p_UFOs(new UFOControl);
+std::shared_ptr<EnemyController> p_Enemy(new EnemyController);
 
 Asteroids::Asteroids(PolycodeView *view) : EventHandler()
 {
 	Random::Setup();
 	// 	Core (int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate, int monitorIndex)
 	pCore = new POLYCODE_CORE(view, 800, 720, false, true, 0, 0, 240, 0, true);
+	p_Scene = std::shared_ptr<CollisionScene>(new CollisionScene());
 
 	m_Exit = false;
 	m_Paused = false;
 	m_FiredShot = false;
 	m_Hyper = false;
 	//  Core::resizeTo 	(int xRes, int yRes);	
-	p_Scene = std::shared_ptr<CollisionScene>(new CollisionScene());
-	p_Scene->clearColor = Color(0.05, 0.02, 0.075, 1.0);
+	p_Scene->clearColor = Color(0.09, 0.06, 0.205, 1.0);
 	p_Scene->useClearColor = true;
 
 	p_Scene->getDefaultCamera()->setPosition(0, 0, -80);
@@ -26,6 +27,7 @@ Asteroids::Asteroids(PolycodeView *view) : EventHandler()
 
 	p_Player->Setup(p_Scene);
 	p_UFOs->Setup(p_Scene, p_Player);
+	p_Enemy->Setup(p_Scene, p_Player, p_UFOs);
 	p_Rocks->Setup(p_Scene, p_Player, p_UFOs);
 }
 
@@ -98,6 +100,7 @@ void Asteroids::handlePlayerInput(void)
 	bool key_a = pCore->getInput()->getKeyState(KEY_a);
 	bool key_d = pCore->getInput()->getKeyState(KEY_d);
 	bool key_space = pCore->getInput()->getKeyState(KEY_SPACE);
+	bool key_lshift = pCore->getInput()->getKeyState(KEY_LSHIFT);
 
 	if (key_up || key_w)
 	{
@@ -106,6 +109,15 @@ void Asteroids::handlePlayerInput(void)
 	else
 	{
 		p_Player->ThrustOff();
+	}
+
+	if (key_lshift)
+	{
+		p_Player->ShieldOn();
+	}
+	else
+	{
+		p_Player->ShieldOff();
 	}
 	
 	if (key_left || key_a || key_right || key_d)
@@ -154,13 +166,11 @@ bool Asteroids::Update()
 	{
 		pCore->doSleep();
 
-		Number *elapsed = 0;
 		Number frameelapsed = pCore->getElapsed();
-		elapsed = &frameelapsed;
 
 		if (p_Player->m_Active)
 		{
-			p_Player->Update(elapsed);
+			p_Player->Update(&frameelapsed);
 			handlePlayerInput();
 		}
 		else
@@ -168,9 +178,10 @@ bool Asteroids::Update()
 			p_Player->UpdateGameOver();
 		}
 
-		p_Player->UpdateShots(elapsed);
-		p_Rocks->Update(elapsed);
-		p_UFOs->Update(elapsed);
+		p_Player->UpdateShots(&frameelapsed);
+		p_Rocks->Update(&frameelapsed);
+		p_UFOs->Update(&frameelapsed);
+		p_Enemy->Update(&frameelapsed);
 	}
 
 	if (m_Exit)

@@ -41,11 +41,8 @@ void Location::Update(Number *elapsed)
 	m_Rotation.Velocity += m_Rotation.Acceleration;
 	m_Rotation.Amount += (m_Rotation.Velocity * *elapsed);
 
-	if (m_Rotation.Amount > 360)
-		m_Rotation.Amount = 0;
-
-	if (m_Rotation.Amount < 0)
-		m_Rotation.Amount = 360;
+	//degrees = (degrees + 360) % 360;
+	m_Rotation.Amount += 360 % 360;
 }
 
 bool Location::CirclesIntersect(Polycode::Vector3 Target, float TargetRadius)
