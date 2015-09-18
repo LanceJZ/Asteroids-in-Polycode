@@ -1,10 +1,14 @@
 Asteroids in Polycode
 =====================
 
+Version Beta 1.453
+==================
+More code optimizations. Now this version is up for RC.
+
 Version Beta 1.452
 ==================
 Code optimizations, code cleanup.
-While I convert this project to Asteroids Deluxe, I spoted a few things that I was able to improve on. Now this version is up for RC.
+While I convert this project to Asteroids Deluxe, I spoted a few things that I was able to improve on.
 
 Version Beta 1.451
 ==================

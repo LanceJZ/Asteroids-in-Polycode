@@ -70,7 +70,7 @@ private:
 
 	SceneMesh *m_ShipExplosionMesh[6];
 	SceneMesh *m_ShipFlameMesh;
-	SceneMesh *m_ShipCloneMesh;
+	SceneMesh *m_ShipLivesMesh;
 
 	void ApplyThrust(void);
 	void StartExplode(void);
