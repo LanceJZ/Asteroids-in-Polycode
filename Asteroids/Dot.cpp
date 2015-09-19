@@ -56,7 +56,7 @@ void Dot::Activate(Vector3 position, float size)
 	else
 		m_Position.y -= Random::Number(0, size) - size / 2;
 	
-	float angle = Random::Number(0, (float)Pi * 2);
+	float angle = Random::Number(0, PI * 2);
 	float speed = Random::Number(1.5, 6.66);
 	m_Velocity.x = cos(angle) * speed;
 	m_Velocity.y = sin(angle) * speed;

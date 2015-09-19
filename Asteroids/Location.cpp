@@ -8,9 +8,9 @@ Location::Location()
 	m_Rotation.Acceleration = 0;
 	m_Rotation.Velocity = 0;
 
-	m_Position = Polycode::Vector3();
-	m_Velocity = Polycode::Vector3();
-	m_Acceleration = Polycode::Vector3();
+	m_Position = 0;
+	m_Velocity = 0;
+	m_Acceleration = 0;
 
 	m_WindowWidth = 800 / (80 / 3.7);
 	m_WindowHeight = 720 / (80 / 3.7);
@@ -41,7 +41,6 @@ void Location::Update(Number *elapsed)
 	m_Rotation.Velocity += m_Rotation.Acceleration;
 	m_Rotation.Amount += (m_Rotation.Velocity * *elapsed);
 
-	//degrees = (degrees + 360) % 360;
 	m_Rotation.Amount += 360 % 360;
 }
 

@@ -394,7 +394,7 @@ void Player::ThrustOff(void)
 
 void Player::ApplyThrust(void)
 {
-	float rad = (m_Rotation.Amount) * Pi / 180.0;
+	float rad = (m_Rotation.Amount) * TORADIANS;
 
 	float thrustAmount = 0.45;
 
@@ -432,7 +432,7 @@ void Player::StartExplode(void)
 		p_ExpLoc[i]->m_Rotation.Velocity = Random::Number(1, 50);
 
 		Vector3 vel = 0;
-		float angle = Random::Number(0, (float)Pi * 2);
+		float angle = Random::Number(0, PI * 2);
 		float speed = Random::Number(0.666, 1.666);
 		vel.x = cos(angle) * speed;
 		vel.y = sin(angle) * speed;
@@ -494,7 +494,7 @@ void Player::FireShot(void)
 			if (!p_Shots[i]->m_Active)
 			{
 				float speed = 35;
-				float rad = (m_Rotation.Amount) * Pi / 180.0;
+				float rad = (m_Rotation.Amount) * TORADIANS;
 				Vector3 direction = Vector3(cos(rad) * speed, sin(rad) * speed, 0);
 				Vector3 position = Vector3(cos(rad) * 1.15, sin(rad) * 1.15, 0);
 

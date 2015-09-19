@@ -1,9 +1,12 @@
 Asteroids in Polycode
 =====================
+Version Beta 1.454
+==================
+More code optimizations. I did not need my own Pi const. Now this version is up for RC.
 
 Version Beta 1.453
 ==================
-More code optimizations. Now this version is up for RC.
+More code optimizations.
 
 Version Beta 1.452
 ==================
